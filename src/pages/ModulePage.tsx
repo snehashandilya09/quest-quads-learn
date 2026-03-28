@@ -1,59 +1,104 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGameStore, AnswerRecord } from "@/store/useGameStore";
 import { Module } from "@/data/curriculum";
-import { BookOpen, HelpCircle, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { BookOpen, HelpCircle, CheckCircle2, XCircle, ArrowRight, RotateCcw } from "lucide-react";
 
 interface Props {
   module: Module;
 }
 
 const ModulePage = ({ module }: Props) => {
-  const { recordAnswer, getModuleAnswer } = useGameStore();
-  const existingAnswer = getModuleAnswer(module.id);
+  const { recordAnswer, getModuleAnswers } = useGameStore();
+  const existingAnswers = getModuleAnswers(module.id);
 
-  const [phase, setPhase] = useState<"learn" | "test">(existingAnswer ? "test" : "learn");
-  const [selected, setSelected] = useState<string | null>(existingAnswer?.selectedAnswer ?? null);
-  const [submitted, setSubmitted] = useState(!!existingAnswer);
+  // Find the first unanswered (or first incorrectly answered) question index
+  const getStartIndex = useCallback(() => {
+    for (let i = 0; i < module.questions.length; i++) {
+      const existing = existingAnswers.find(a => a.questionId === module.questions[i].id && a.correct);
+      if (!existing) return i;
+    }
+    return module.questions.length - 1;
+  }, [module, existingAnswers]);
+
+  const [phase, setPhase] = useState<"learn" | "test">(existingAnswers.length > 0 ? "test" : "learn");
+  const [currentQIndex, setCurrentQIndex] = useState(getStartIndex);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [solved, setSolved] = useState(false);
   const [hintsRevealed, setHintsRevealed] = useState(0);
-  const [showMisconception, setShowMisconception] = useState<string | null>(
-    existingAnswer && !existingAnswer.correct
-      ? module.question.options.find(o => o.label === existingAnswer.selectedAnswer)?.misconception ?? null
-      : null
-  );
+  const [wrongFeedback, setWrongFeedback] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  const q = module.question;
-  const isCorrect = selected === q.correctAnswer;
+  const q = module.questions[currentQIndex];
+  const existingCorrect = existingAnswers.find(a => a.questionId === q?.id && a.correct);
 
   const handleSubmit = () => {
-    if (!selected) return;
-    setSubmitted(true);
+    if (!selected || !q) return;
 
     const correct = selected === q.correctAnswer;
-    if (!correct) {
-      const opt = q.options.find(o => o.label === selected);
-      setShowMisconception(opt?.misconception ?? null);
-    }
 
-    const record: AnswerRecord = {
-      moduleId: module.id,
-      questionId: q.id,
-      selectedAnswer: selected,
-      correct,
-      hintsUsed: hintsRevealed,
-      timestamp: Date.now(),
-    };
-    recordAnswer(record);
+    if (correct) {
+      setSolved(true);
+      setWrongFeedback(null);
+      const record: AnswerRecord = {
+        moduleId: module.id,
+        questionId: q.id,
+        selectedAnswer: selected,
+        correct: true,
+        hintsUsed: hintsRevealed,
+        retryCount,
+        timestamp: Date.now(),
+      };
+      recordAnswer(record);
+    } else {
+      setRetryCount(prev => prev + 1);
+      const opt = q.options.find(o => o.label === selected);
+      setWrongFeedback(opt?.misconception ?? "That's not quite right. Try again!");
+      setSelected(null);
+      // Record wrong attempt
+      const record: AnswerRecord = {
+        moduleId: module.id,
+        questionId: q.id,
+        selectedAnswer: selected,
+        correct: false,
+        hintsUsed: hintsRevealed,
+        retryCount: retryCount + 1,
+        timestamp: Date.now(),
+      };
+      recordAnswer(record);
+    }
+  };
+
+  const handleNextQuestion = () => {
+    if (currentQIndex < module.questions.length - 1) {
+      setCurrentQIndex(prev => prev + 1);
+      setSelected(null);
+      setSolved(false);
+      setHintsRevealed(0);
+      setWrongFeedback(null);
+      setRetryCount(0);
+    }
   };
 
   const revealHint = () => {
     if (hintsRevealed < 3) setHintsRevealed(hintsRevealed + 1);
   };
 
+  if (!q) return null;
+
+  const allSolved = module.questions.every(
+    mq => existingAnswers.find(a => a.questionId === mq.id && a.correct)
+  );
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="font-display text-3xl gradient-text">{module.title}</h1>
+        {module.questions.length > 1 && (
+          <p className="text-sm text-muted-foreground mt-1">
+            Question {currentQIndex + 1} of {module.questions.length}
+          </p>
+        )}
       </div>
 
       {/* Phase toggle */}
@@ -99,21 +144,28 @@ const ModulePage = ({ module }: Props) => {
           </motion.div>
         ) : (
           <motion.div
-            key="test"
+            key={`test-${q.id}`}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             className="space-y-5"
           >
+            {/* Already solved badge */}
+            {existingCorrect && !solved && (
+              <div className="glass-card p-4 border-l-4 border-l-success flex items-center gap-3">
+                <CheckCircle2 className="w-5 h-5 text-success" />
+                <p className="text-sm text-foreground font-medium">You've already mastered this question! ✅</p>
+              </div>
+            )}
+
             {/* Question */}
             <div className="glass-card p-7">
               <h2 className="font-bold text-lg text-foreground mb-5">{q.text}</h2>
               <div className="space-y-3">
                 {q.options.map((opt) => {
                   let optionStyle = "glass-card cursor-pointer hover:border-primary/50";
-                  if (submitted) {
+                  if (solved || existingCorrect) {
                     if (opt.label === q.correctAnswer) optionStyle = "border-2 rounded-lg cursor-default bg-success/10 border-success";
-                    else if (opt.label === selected) optionStyle = "border-2 rounded-lg cursor-default bg-destructive/10 border-destructive";
                     else optionStyle = "glass-card opacity-50 cursor-default";
                   } else if (selected === opt.label) {
                     optionStyle = "border-2 rounded-lg cursor-pointer border-primary bg-primary/10";
@@ -122,28 +174,27 @@ const ModulePage = ({ module }: Props) => {
                   return (
                     <motion.button
                       key={opt.label}
-                      whileHover={!submitted ? { scale: 1.01 } : {}}
-                      whileTap={!submitted ? { scale: 0.99 } : {}}
-                      onClick={() => !submitted && setSelected(opt.label)}
+                      whileHover={!(solved || existingCorrect) ? { scale: 1.01 } : {}}
+                      whileTap={!(solved || existingCorrect) ? { scale: 0.99 } : {}}
+                      onClick={() => !(solved || existingCorrect) && setSelected(opt.label)}
                       className={`w-full text-left p-4 rounded-2xl transition-all flex items-center gap-3 ${optionStyle}`}
                     >
                       <span className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold shrink-0"
                         style={{
-                          background: selected === opt.label && !submitted ? module.color : "hsl(var(--muted))",
-                          color: selected === opt.label && !submitted ? "white" : "hsl(var(--muted-foreground))",
+                          background: selected === opt.label && !(solved || existingCorrect) ? module.color : "hsl(var(--muted))",
+                          color: selected === opt.label && !(solved || existingCorrect) ? "white" : "hsl(var(--muted-foreground))",
                         }}
                       >
                         {opt.label}
                       </span>
                       <span className="text-foreground font-medium">{opt.text}</span>
-                      {submitted && opt.label === q.correctAnswer && <CheckCircle2 className="w-5 h-5 text-success ml-auto" />}
-                      {submitted && opt.label === selected && opt.label !== q.correctAnswer && <XCircle className="w-5 h-5 text-destructive ml-auto" />}
+                      {(solved || existingCorrect) && opt.label === q.correctAnswer && <CheckCircle2 className="w-5 h-5 text-success ml-auto" />}
                     </motion.button>
                   );
                 })}
               </div>
 
-              {!submitted && (
+              {!(solved || existingCorrect) && (
                 <div className="mt-5 flex items-center gap-3">
                   <button onClick={handleSubmit} disabled={!selected} className="btn-primary-glass text-sm disabled:opacity-40">
                     Submit Answer
@@ -155,6 +206,27 @@ const ModulePage = ({ module }: Props) => {
                 </div>
               )}
             </div>
+
+            {/* Wrong attempt feedback — Growth Mindset */}
+            <AnimatePresence>
+              {wrongFeedback && !solved && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="glass-card p-5 border-l-4 border-l-warning"
+                >
+                  <div className="flex items-start gap-3">
+                    <RotateCcw className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-foreground text-sm mb-1">Not quite — but keep going! 💪</p>
+                      <p className="text-sm text-foreground/80">{wrongFeedback}</p>
+                      <p className="text-xs text-muted-foreground mt-2">Pick another option and try again.</p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Hints */}
             <AnimatePresence>
@@ -182,47 +254,46 @@ const ModulePage = ({ module }: Props) => {
               )}
             </AnimatePresence>
 
-            {/* Feedback */}
+            {/* Success feedback */}
             <AnimatePresence>
-              {submitted && (
+              {(solved || existingCorrect) && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`glass-card p-5 border-l-4 ${isCorrect ? "border-l-success" : "border-l-destructive"}`}
+                  className="glass-card p-5 border-l-4 border-l-success"
                 >
-                  {isCorrect ? (
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="w-7 h-7 text-success" />
-                      <div>
-                        <p className="font-bold text-foreground">Excellent! 🎉</p>
-                        <p className="text-sm text-muted-foreground">You nailed it! The answer is {q.correctAnswer}.</p>
-                      </div>
-                    </div>
-                  ) : (
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 className="w-7 h-7 text-success" />
                     <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <XCircle className="w-7 h-7 text-destructive" />
-                        <p className="font-bold text-foreground">Not quite!</p>
-                      </div>
-                      {showMisconception && (
-                        <p className="text-sm text-foreground/80 ml-10 mb-2">
-                          <span className="font-semibold text-destructive">Common mistake:</span> {showMisconception}
-                        </p>
-                      )}
-                      <p className="text-sm text-muted-foreground ml-10">
-                        The correct answer is <span className="font-bold text-success">{q.correctAnswer}</span>.
+                      <p className="font-bold text-foreground">Success! You mastered this concept! 🎉</p>
+                      <p className="text-sm text-muted-foreground">
+                        {retryCount > 0
+                          ? `Great perseverance! You got it after ${retryCount + 1} attempts.`
+                          : "Perfect — first try! 🌟"}
                       </p>
-                      {(module.id === "rectangle" || module.id === "square-identity") && !isCorrect && (
-                        <div className="mt-4 ml-10 p-4 rounded-xl bg-warning/10 border border-warning/30">
-                          <p className="text-sm font-semibold text-warning mb-1">🔨 Carpenter's Workshop — Property Confusion</p>
-                          <p className="text-sm text-foreground/80">
-                            {module.id === "rectangle"
-                              ? "Rectangles, squares, and rhombuses share many properties but each has unique rules. A rectangle's superpower is equal diagonals. Try comparing: what does a rhombus have that a rectangle doesn't?"
-                              : "Shapes can belong to multiple families! A square follows ALL rules of both rhombuses (4 equal sides) and rectangles (4 right angles). It's like being in two clubs at once because you meet both sets of requirements."}
-                          </p>
-                        </div>
-                      )}
                     </div>
+                  </div>
+
+                  {/* Carpenter's Workshop for property confusion */}
+                  {(module.id === "rectangle" || module.id === "square-identity") && retryCount > 0 && (
+                    <div className="mt-4 p-4 rounded-xl bg-warning/10 border border-warning/30">
+                      <p className="text-sm font-semibold text-warning mb-1">🔨 Carpenter's Workshop — Property Confusion</p>
+                      <p className="text-sm text-foreground/80">
+                        {module.id === "rectangle"
+                          ? "Rectangles, squares, and rhombuses share many properties but each has unique rules. A rectangle's superpower is equal diagonals. Try comparing: what does a rhombus have that a rectangle doesn't?"
+                          : "Shapes can belong to multiple families! A square follows ALL rules of both rhombuses (4 equal sides) and rectangles (4 right angles). It's like being in two clubs at once because you meet both sets of requirements."}
+                      </p>
+                    </div>
+                  )}
+
+                  {currentQIndex < module.questions.length - 1 && (
+                    <button onClick={handleNextQuestion} className="btn-primary-glass text-sm mt-4">
+                      Next Question <ArrowRight className="w-4 h-4 inline ml-1" />
+                    </button>
+                  )}
+
+                  {allSolved && (
+                    <p className="text-sm text-success font-semibold mt-3">🏆 All questions in this module mastered!</p>
                   )}
                 </motion.div>
               )}
