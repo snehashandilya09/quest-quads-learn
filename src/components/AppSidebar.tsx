@@ -1,6 +1,6 @@
 import { useGameStore } from "@/store/useGameStore";
 import { modules } from "@/data/curriculum";
-import { LayoutDashboard, Download, LogOut, Hexagon, RotateCw, Square, Diamond } from "lucide-react";
+import { LayoutDashboard, Download, LogOut, Hexagon, RotateCw, Square, Diamond, Triangle, Wind, RectangleHorizontal, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -8,6 +8,10 @@ const iconMap: Record<string, React.ElementType> = {
   "rotate-cw": RotateCw,
   square: Square,
   diamond: Diamond,
+  triangle: Triangle,
+  wind: Wind,
+  "rectangle-horizontal": RectangleHorizontal,
+  crown: Crown,
 };
 
 interface Props {

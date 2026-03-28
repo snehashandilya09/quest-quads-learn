@@ -56,7 +56,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   getTopicCompletion: () => {
     const answers = get().answers;
-    const modules = ['polygons', 'exterior-angles', 'parallelograms', 'rhombus'];
+    const modules = ['polygons', 'exterior-angles', 'parallelograms', 'rhombus', 'angle-sum', 'kite', 'rectangle', 'square-identity'];
     const result: Record<string, number> = {};
     modules.forEach(m => {
       const answer = answers.find(a => a.moduleId === m);
