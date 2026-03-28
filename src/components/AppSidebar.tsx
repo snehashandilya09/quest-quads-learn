@@ -54,7 +54,11 @@ const AppSidebar = ({ currentView, onNavigate }: Props) => {
 
         {modules.map((mod) => {
           const Icon = iconMap[mod.icon] || Hexagon;
-          const answer = store.getModuleAnswer(mod.id);
+          const moduleAnswers = store.getModuleAnswers(mod.id);
+          const correctCount = moduleAnswers.filter(a => a.correct).length;
+          const totalQ = mod.questions.length;
+          const badge = moduleAnswers.length > 0 ? `${correctCount}/${totalQ}` : undefined;
+          const allCorrect = correctCount === totalQ;
           return (
             <SidebarItem
               key={mod.id}
@@ -62,8 +66,8 @@ const AppSidebar = ({ currentView, onNavigate }: Props) => {
               label={mod.title}
               active={currentView === mod.id}
               onClick={() => onNavigate(mod.id)}
-              badge={answer ? (answer.correct ? "✓" : "✗") : undefined}
-              badgeColor={answer ? (answer.correct ? "hsl(var(--success))" : "hsl(var(--destructive))") : undefined}
+              badge={badge}
+              badgeColor={moduleAnswers.length > 0 ? (allCorrect ? "hsl(var(--success))" : "hsl(var(--warning))") : undefined}
             />
           );
         })}
