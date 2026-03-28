@@ -5,12 +5,15 @@ import { CheckCircle2, XCircle, Lightbulb, Target } from "lucide-react";
 
 const Dashboard = () => {
   const store = useGameStore();
-  const completion = store.getTopicCompletion();
+
+  const totalCorrect = store.getCorrectCount();
+  const totalWrong = store.getWrongCount();
+  const totalAnswered = store.answers.length;
 
   const stats = [
-    { label: "Solved", value: store.answers.length, icon: CheckCircle2, color: "hsl(var(--primary))" },
-    { label: "Correct", value: store.getCorrectCount(), icon: Target, color: "hsl(var(--success))" },
-    { label: "Wrong", value: store.getWrongCount(), icon: XCircle, color: "hsl(var(--destructive))" },
+    { label: "Solved", value: totalAnswered, icon: CheckCircle2, color: "hsl(var(--primary))" },
+    { label: "Correct", value: totalCorrect, icon: Target, color: "hsl(var(--success))" },
+    { label: "Wrong", value: totalWrong, icon: XCircle, color: "hsl(var(--destructive))" },
     { label: "Hints Used", value: store.getTotalHintsUsed(), icon: Lightbulb, color: "hsl(var(--warning))" },
   ];
 
@@ -69,23 +72,30 @@ const Dashboard = () => {
       >
         <h2 className="font-bold text-lg text-foreground mb-5">🗺️ Mastery Map</h2>
         <div className="space-y-4">
-          {modules.map((mod) => (
-            <div key={mod.id}>
-              <div className="flex justify-between text-sm mb-1.5">
-                <span className="font-semibold text-foreground">{mod.title}</span>
-                <span className="text-muted-foreground">{completion[mod.id] || 0}%</span>
+          {modules.map((mod) => {
+            const moduleAnswers = store.getModuleAnswers(mod.id);
+            const correctCount = moduleAnswers.filter(a => a.correct).length;
+            const totalQ = mod.questions.length;
+            const pct = totalQ > 0 ? Math.round((correctCount / totalQ) * 100) : 0;
+
+            return (
+              <div key={mod.id}>
+                <div className="flex justify-between text-sm mb-1.5">
+                  <span className="font-semibold text-foreground">{mod.title}</span>
+                  <span className="text-muted-foreground">{correctCount}/{totalQ} ({pct}%)</span>
+                </div>
+                <div className="progress-bar-track">
+                  <div
+                    className="progress-bar-fill"
+                    style={{
+                      width: `${pct}%`,
+                      background: mod.color,
+                    }}
+                  />
+                </div>
               </div>
-              <div className="progress-bar-track">
-                <div
-                  className="progress-bar-fill"
-                  style={{
-                    width: `${completion[mod.id] || 0}%`,
-                    background: mod.color,
-                  }}
-                />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </motion.div>
     </div>
