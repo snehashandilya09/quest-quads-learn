@@ -56,7 +56,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   getTopicCompletion: () => {
     const answers = get().answers;
-    const modules = ['polygons', 'exterior-angles', 'parallelograms', 'rhombus'];
+    const modules = ['polygons', 'exterior-angles', 'parallelograms', 'rhombus', 'angle-sum', 'kite', 'rectangle', 'square-identity'];
     const result: Record<string, number> = {};
     modules.forEach(m => {
       const answer = answers.find(a => a.moduleId === m);
@@ -71,6 +71,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       student_id: state.studentId ?? null,
       session_id: state.sessionId,
       timestamp: new Date().toISOString(),
+      total_questions: 24,
       correct_answers: state.getCorrectCount(),
       wrong_answers: state.getWrongCount(),
       hints_used: state.getTotalHintsUsed(),

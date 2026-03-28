@@ -212,6 +212,16 @@ const ModulePage = ({ module }: Props) => {
                       <p className="text-sm text-muted-foreground ml-10">
                         The correct answer is <span className="font-bold text-success">{q.correctAnswer}</span>.
                       </p>
+                      {(module.id === "rectangle" || module.id === "square-identity") && !isCorrect && (
+                        <div className="mt-4 ml-10 p-4 rounded-xl bg-warning/10 border border-warning/30">
+                          <p className="text-sm font-semibold text-warning mb-1">🔨 Carpenter's Workshop — Property Confusion</p>
+                          <p className="text-sm text-foreground/80">
+                            {module.id === "rectangle"
+                              ? "Rectangles, squares, and rhombuses share many properties but each has unique rules. A rectangle's superpower is equal diagonals. Try comparing: what does a rhombus have that a rectangle doesn't?"
+                              : "Shapes can belong to multiple families! A square follows ALL rules of both rhombuses (4 equal sides) and rectangles (4 right angles). It's like being in two clubs at once because you meet both sets of requirements."}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </motion.div>
