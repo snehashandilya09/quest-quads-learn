@@ -6,6 +6,7 @@ export interface AnswerRecord {
   selectedAnswer: string;
   correct: boolean;
   hintsUsed: number;
+  retryCount: number;
   timestamp: number;
 }
 
@@ -18,6 +19,7 @@ interface GameState {
   setStudentId: (id: string) => void;
   setCurrentModule: (id: string | null) => void;
   recordAnswer: (record: AnswerRecord) => void;
+  getModuleAnswers: (moduleId: string) => AnswerRecord[];
   getModuleAnswer: (moduleId: string) => AnswerRecord | undefined;
   getCorrectCount: () => number;
   getWrongCount: () => number;
@@ -30,6 +32,8 @@ interface GameState {
 
 const generateSessionId = () => `session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
+const MODULE_IDS = ['polygons', 'exterior-angles', 'parallelograms', 'rhombus', 'angle-sum', 'kite', 'rectangle', 'square-identity'];
+
 export const useGameStore = create<GameState>((set, get) => ({
   studentId: null,
   sessionId: generateSessionId(),
@@ -39,28 +43,44 @@ export const useGameStore = create<GameState>((set, get) => ({
   setStudentId: (id) => set({ studentId: id }),
   setCurrentModule: (id) => set({ currentModule: id }),
   
-  recordAnswer: (record) => set((state) => ({
-    answers: [...state.answers.filter(a => a.moduleId !== record.moduleId), record],
-  })),
+  recordAnswer: (record) => set((state) => {
+    // For correct answers, replace any previous record for this question
+    // For wrong answers, just update the latest attempt
+    const filtered = state.answers.filter(
+      a => !(a.moduleId === record.moduleId && a.questionId === record.questionId)
+    );
+    return { answers: [...filtered, record] };
+  }),
 
-  getModuleAnswer: (moduleId) => get().answers.find(a => a.moduleId === moduleId),
+  getModuleAnswers: (moduleId) => get().answers.filter(a => a.moduleId === moduleId),
+  
+  getModuleAnswer: (moduleId) => {
+    const answers = get().answers.filter(a => a.moduleId === moduleId);
+    return answers[0];
+  },
 
   getCorrectCount: () => get().answers.filter(a => a.correct).length,
   getWrongCount: () => get().answers.filter(a => !a.correct).length,
   getAccuracy: () => {
     const answers = get().answers;
     if (answers.length === 0) return 0;
-    return Math.round((answers.filter(a => a.correct).length / answers.length) * 100);
+    const correct = answers.filter(a => a.correct).length;
+    return Math.round((correct / answers.length) * 100);
   },
   getTotalHintsUsed: () => get().answers.reduce((sum, a) => sum + a.hintsUsed, 0),
 
   getTopicCompletion: () => {
     const answers = get().answers;
-    const modules = ['polygons', 'exterior-angles', 'parallelograms', 'rhombus', 'angle-sum', 'kite', 'rectangle', 'square-identity'];
     const result: Record<string, number> = {};
-    modules.forEach(m => {
-      const answer = answers.find(a => a.moduleId === m);
-      result[m] = answer ? (answer.correct ? 100 : 40) : 0;
+    MODULE_IDS.forEach(m => {
+      const moduleAnswers = answers.filter(a => a.moduleId === m);
+      const correctCount = moduleAnswers.filter(a => a.correct).length;
+      const totalForModule = moduleAnswers.length;
+      if (totalForModule === 0) {
+        result[m] = 0;
+      } else {
+        result[m] = Math.round((correctCount / Math.max(totalForModule, 1)) * 100);
+      }
     });
     return result;
   },
@@ -71,7 +91,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       student_id: state.studentId ?? null,
       session_id: state.sessionId,
       timestamp: new Date().toISOString(),
-      total_questions: 24,
+      total_questions: 40,
       correct_answers: state.getCorrectCount(),
       wrong_answers: state.getWrongCount(),
       hints_used: state.getTotalHintsUsed(),
