@@ -19,7 +19,7 @@ const Index = () => {
       <AppSidebar currentView={currentView} onNavigate={setCurrentView} />
       <main className="flex-1 p-6 lg:p-10 max-w-4xl">
         {activeModule ? (
-          <ModulePage key={activeModule.id} module={activeModule} />
+          <ModulePage key={activeModule.id} module={activeModule} onNavigate={setCurrentView} />
         ) : (
           <Dashboard />
         )}

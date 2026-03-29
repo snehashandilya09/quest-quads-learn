@@ -1,11 +1,12 @@
 export interface Option {
   label: string;
   text: string;
-  misconception?: string;
+  misconceptionTag?: string;
 }
 
 export interface Question {
   id: string;
+  concept: string;
   text: string;
   options: Option[];
   correctAnswer: string;
@@ -15,275 +16,544 @@ export interface Question {
 export interface Module {
   id: string;
   title: string;
-  icon: string;
   story: string;
   questions: Question[];
-  color: string;
 }
 
 export const modules: Module[] = [
   {
-    id: "polygons",
-    title: "Polygons",
-    icon: "hexagon",
-    color: "hsl(243, 60%, 58%)",
-    story: "Imagine a wooden frame. If all sides and angles are identical, it is a 'Regular' polygon. A regular polygon is like a perfectly balanced shape — every edge the same length, every corner the same angle. Think of a stop sign (octagon) or a honeycomb cell (hexagon).",
+    id: "module-1-polygons",
+    title: "Polygons & Basics",
+    story: `
+<div class='space-y-8 text-slate-800 leading-relaxed'>
+  <section>
+    <h3 class='font-bold text-xl mb-4 text-blue-900'>Section 1: The Blueprint of Shapes</h3>
+    <p>
+      Welcome to your geometry journey. Imagine you are a surveyor given a bundle of perfectly straight wooden beams.
+      To create a true <strong>Polygon</strong>, you must follow two golden rules: the path must be closed and every side
+      must be straight.
+    </p>
+    <img src="/assets/images/module1/polygon-definition.png" alt="Polygon Basics" class="rounded-lg shadow-sm border border-slate-100 max-w-sm" />
+  </section>
+
+  <section>
+    <h3 class='font-bold text-xl mb-4 text-blue-900'>Section 2: Shape Personalities</h3>
+
+    <div>
+      <h4 class='font-bold text-lg mb-3 text-blue-900'>Convex vs. Concave</h4>
+      <p>
+        Most shapes point outward. These are <strong>Convex</strong> polygons. Some shapes have a dent pointing inward.
+        This is a <strong>Concave</strong> polygon, which happens because at least one interior angle is larger than 180°.
+      </p>
+      <img src="/assets/images/module1/convex-concave.png" alt="Convex Concave Test" class="rounded-lg shadow-sm border border-slate-100 max-w-xs" />
+    </div>
+
+    <div>
+      <h4 class='font-bold text-lg mb-3 text-blue-900'>Joining the Regular Club</h4>
+      <p>
+        To be called <strong>Regular</strong>, a polygon must be perfectly balanced. Every side is the same length and every
+        angle is the same size. A square is regular. A rectangle is not.
+      </p>
+      <img src="/assets/images/module1/regular-comparison.png" alt="Regularity Check" class="rounded-lg shadow-sm border border-slate-100 max-w-sm" />
+    </div>
+  </section>
+
+  <section>
+    <h3 class='font-bold text-xl mb-4 text-blue-900'>Section 3: The 360° Secret</h3>
+    <p>
+      Here is a magic trick of geometry. No matter if a polygon has 3 sides or 300, if you walk all the way around its
+      outside boundary, the total sum of your turns (the <strong>Exterior Angles</strong>) always adds up to exactly
+      <strong> 360°</strong>.
+    </p>
+  </section>
+</div>
+`,
     questions: [
       {
-        id: "q1",
-        text: "Why is a square a 'Regular' polygon?",
+        id: "m1_q1",
+        concept: "Concave vs Convex",
+        text: "If a polygon has a 'dent' pointing inward, what kind of polygon is it?",
         options: [
-          { label: "A", text: "It has 4 sides", misconception: "Having 4 sides only makes it a quadrilateral, not necessarily regular. A trapezoid also has 4 sides!" },
-          { label: "B", text: "It has parallel sides", misconception: "Parallel sides make it a parallelogram. A rectangle has parallel sides too, but regularity needs more." },
-          { label: "C", text: "Equal sides AND equal angles" },
-          { label: "D", text: "It is a closed curve", misconception: "All polygons are closed figures. That alone doesn't make one 'regular'." },
+          { label: "A", text: "Regular", misconceptionTag: "Regular polygons must be perfectly balanced and pushed outward (convex)." },
+          { label: "B", text: "Convex", misconceptionTag: "Convex means all parts of the shape push outward. No dents allowed!" },
+          { label: "C", text: "Concave" },
+          { label: "D", text: "Complex", misconceptionTag: "Complex usually refers to lines crossing each other. We are looking for a simpler word." }
         ],
         correctAnswer: "C",
         hints: [
-          "Think about it: 4 sides just makes it a quadrilateral. What else is special about a square?",
-          "'Regular' means perfectly balanced — nothing uneven at all.",
-          "Look for BOTH equal sides AND equal angles together.",
-        ],
+          "Look at the word itself. When a shape has a dent or goes inward, it forms a kind of hollow space.",
+          "Convex polygons are pushed entirely outward. If any part collapses inward, it changes its category.",
+          "Shapes with an inward dent are called Con-CAVE."
+        ]
       },
-    ],
-  },
-  {
-    id: "exterior-angles",
-    title: "Exterior Angles",
-    icon: "rotate-cw",
-    color: "hsl(174, 50%, 48%)",
-    story: "Imagine walking along the boundary of a park shaped like a polygon. At every corner, you turn slightly to stay on the path. By the time you return to your starting point, you've made one full rotation — spinning all the way around once!",
-    questions: [
       {
-        id: "q2",
-        text: "What is the sum of exterior angles for ANY polygon?",
+        id: "m1_q2",
+        concept: "Regular Polygons",
+        text: "To be called a 'Regular' polygon, a shape must be perfectly balanced. Which shape below is Regular?",
         options: [
-          { label: "A", text: "180°", misconception: "180° is the sum of angles in a triangle, not the exterior angles of a polygon." },
+          { label: "A", text: "A Rectangle", misconceptionTag: "A rectangle has equal angles (90°), but its sides are not all the same length." },
+          { label: "B", text: "A Rhombus", misconceptionTag: "A rhombus has equal sides, but its angles can be different (it can be tilted)." },
+          { label: "C", text: "A Square" },
+          { label: "D", text: "An Isosceles Triangle", misconceptionTag: "Isosceles means only two sides are equal. A regular shape needs ALL sides equal." }
+        ],
+        correctAnswer: "C",
+        hints: [
+          "To be 'Regular', a shape must have BOTH equal sides AND equal angles.",
+          "Think of a rectangle (equal angles) combined with a rhombus (equal sides).",
+          "Only the square has four equal sides AND four equal 90° angles."
+        ]
+      },
+      {
+        id: "m1_q3",
+        concept: "Exterior Angle Sum",
+        text: "If you walk all the way around the boundary of ANY polygon, what is the total sum of the exterior angles?",
+        options: [
+          { label: "A", text: "180°", misconceptionTag: "180° is a half-turn (like turning around). Walking around a shape requires a full turn." },
           { label: "B", text: "360°" },
-          { label: "C", text: "540°", misconception: "540° is the sum of INTERIOR angles of a pentagon. Exterior angles are different!" },
-          { label: "D", text: "90°", misconception: "90° is just one right angle. The exterior angles of any polygon always sum to much more." },
+          { label: "C", text: "540°", misconceptionTag: "540° is the INTERIOR angle sum of a pentagon. We are asking about the outside (exterior)." },
+          { label: "D", text: "It depends on the sides", misconceptionTag: "The interior angles change based on the sides, but the exterior sum is always the same magical number." }
         ],
         correctAnswer: "B",
         hints: [
-          "Don't confuse this with interior angles — 540° is the interior sum of a pentagon.",
-          "Remember the walk: you made one FULL rotation around the park.",
-          "A full circle of rotation = 360°.",
-        ],
+          "Imagine walking around a park shaped like a hexagon. When you return to the start, you are facing the exact same way.",
+          "No matter how many sides a shape has, walking completely around it means you made one full rotation.",
+          "One full circle or rotation is always exactly 360°."
+        ]
       },
-    ],
+      {
+        id: "m1_q4",
+        concept: "Definition of Polygon",
+        text: "Which of the following shapes is NOT a polygon?",
+        options: [
+          { label: "A", text: "A triangle", misconceptionTag: "A triangle is made of straight lines and is fully closed. It is the simplest polygon." },
+          { label: "B", text: "A circle" },
+          { label: "C", text: "A star shape", misconceptionTag: "As long as it is made of straight line segments and is closed, a star is a polygon." },
+          { label: "D", text: "A square", misconceptionTag: "A square is a regular polygon with 4 straight sides." }
+        ],
+        correctAnswer: "B",
+        hints: [
+          "Think about the rules of a polygon. It must be a closed shape made entirely of straight line segments.",
+          "Look at the edges of the shapes listed. Do any of them have curves?",
+          "A circle is made of one continuous curve, so it cannot be a polygon!"
+        ]
+      },
+      {
+        id: "m1_q5",
+        concept: "Interior Angle Sum",
+        text: "You are building a pentagon-shaped (5-sided) fort. What is the total sum of all the inside (interior) angles?",
+        options: [
+          { label: "A", text: "360°", misconceptionTag: "360° is the sum of the EXTERIOR angles, or the interior of a 4-sided shape." },
+          { label: "B", text: "540°" },
+          { label: "C", text: "900°", misconceptionTag: "This would be the sum for a 7-sided shape." },
+          { label: "D", text: "180°", misconceptionTag: "180° is the total for a single triangle (3 sides)." }
+        ],
+        correctAnswer: "B",
+        hints: [
+          "You can split any polygon into triangles to find its inside angles. A 5-sided shape can hold 3 triangles.",
+          "Use the magic formula: (Number of sides - 2) × 180°.",
+          "For a pentagon: (5 - 2) = 3. Multiply 3 × 180° to get the answer."
+        ]
+      }
+    ]
   },
   {
-    id: "parallelograms",
+    id: "module-2-parallelograms",
     title: "Parallelograms",
-    icon: "square",
-    color: "hsl(330, 65%, 62%)",
-    story: "Picture a slanted roof on a house. The two corners right next to each other (adjacent angles) must balance out to keep the top and bottom edges parallel. They're like a seesaw — when one goes up, the other adjusts to maintain the balance.",
+    story: `
+<div class='space-y-8 text-slate-800 leading-relaxed'>
+  <section>
+    <h3 class='text-2xl font-bold text-blue-900 mb-4'>Section 1: The Blueprint of Parallel Lines</h3>
+    <p>Imagine you have a rectangular picture frame. If you gently push the top corner, the frame leans. It is no longer a rectangle, but a <strong>Parallelogram</strong>. Even though it leans, the top and bottom planks stay perfectly level, like train tracks. We call these <strong>Parallel</strong> sides!</p>
+    <img src='/assets/images/module2/m2_parallels.png' alt='Parallel Sides Rule' class='rounded-xl shadow-lg border-2 border-blue-100 mx-auto my-6 max-w-md' />
+  </section>
+
+  <section>
+    <h3 class='text-2xl font-bold text-blue-900 mb-4'>Section 2: The Two Golden Rules</h3>
+    
+    <div class='bg-blue-50 p-6 rounded-2xl border-l-4 border-blue-500'>
+      <h4 class='text-xl font-semibold text-blue-800 mb-2'>Rule 1: The Mirror Rule (Opposite Angles)</h4>
+      <p>Corners facing each other are identical twins. If one is 70°, the one across from it is also 70°!</p>
+      <img src='/assets/images/module2/m2_opposite_angles.png' alt='Opposite Angles are Equal' class='rounded-xl shadow-lg border-2 border-blue-100 mx-auto my-6 max-w-sm' />
+    </div>
+
+    <div class='bg-green-50 p-6 rounded-2xl border-l-4 border-green-500 mt-6'>
+      <h4 class='text-xl font-semibold text-green-800 mb-2'>Rule 2: The Neighbor Rule (Adjacent Angles)</h4>
+      <p>Side-by-side neighbors are a team. Together, they must always add up to exactly <strong>180°</strong>.</p>
+      <img src='/assets/images/module2/m2_adjacent_angles.png' alt='Adjacent Angles sum to 180' class='rounded-xl shadow-lg border-2 border-blue-100 mx-auto my-6 max-w-sm' />
+    </div>
+  </section>
+
+  <section>
+    <h3 class='text-2xl font-bold text-blue-900 mb-4'>Section 3: The Perimeter Garden</h3>
+    <p>Think of your shape as a fence. Since opposite sides are twins, you only need to know two sides to find the total distance around the garden!</p>
+    <img src='/assets/images/module2/m2_perimeter.png' alt='Perimeter Calculation' class='rounded-xl shadow-lg border-2 border-blue-100 mx-auto my-6 max-w-md' />
+  </section>
+  
+  <p class='text-center font-medium text-slate-500 italic pt-4'>Ready to test your knowledge? Click below to start the challenge!</p>
+</div>
+`,
     questions: [
       {
-        id: "q3",
-        text: "If Angle A in a parallelogram is 80°, what is the adjacent Angle B?",
+        id: "m2_q1",
+        concept: "Adjacent Angles",
+        text: "In a parallelogram, if Angle A is 70°, what is the measure of the adjacent Angle B?",
         options: [
-          { label: "A", text: "80°", misconception: "80° would be the OPPOSITE angle, not the adjacent one. Adjacent angles in a parallelogram are supplementary." },
-          { label: "B", text: "100°" },
-          { label: "C", text: "360°", misconception: "360° is the total of ALL angles in a quadrilateral, not just one angle." },
-          { label: "D", text: "90°", misconception: "90° would only work if it were a rectangle. A general parallelogram doesn't need right angles." },
+          { label: "A", text: "70°", misconceptionTag: "70° would be the OPPOSITE angle. Adjacent angles (next to each other) don't match; they add up." },
+          { label: "B", text: "110°" },
+          { label: "C", text: "180°", misconceptionTag: "180° is the total sum of the two angles together, not the measure of just Angle B." },
+          { label: "D", text: "90°", misconceptionTag: "90° only applies if this shape was specifically a rectangle." }
         ],
         correctAnswer: "B",
         hints: [
-          "80° is for the OPPOSITE corner, not the one next to it.",
-          "Adjacent angles in a parallelogram are supplementary (they add up to a straight line).",
-          "A straight line = 180°. So 180° − 80° = ?",
-        ],
+          "Are these angles facing each other (opposite) or right next to each other on the same line (adjacent)?",
+          "Angles sitting next to each other on the parallel 'train tracks' are supplementary—they add up to a specific total.",
+          "Adjacent angles add to 180°. Subtract 70 from 180 to find Angle B."
+        ]
       },
-    ],
+      {
+        id: "m2_q2",
+        concept: "Opposite Angles",
+        text: "If the bottom-left corner of a parallelogram is 65°, what is the measure of the top-right corner?",
+        options: [
+          { label: "A", text: "115°", misconceptionTag: "115° would be the adjacent (neighboring) angle. We are looking for the opposite one." },
+          { label: "B", text: "65°" },
+          { label: "C", text: "90°", misconceptionTag: "We cannot assume it is 90° unless we are told it is a rectangle." },
+          { label: "D", text: "180°", misconceptionTag: "No single angle in a standard parallelogram can be 180° (a flat line)." }
+        ],
+        correctAnswer: "B",
+        hints: [
+          "These corners are looking directly across the shape at each other. They are opposite.",
+          "If you cut a parallelogram diagonally, the two halves are identical triangles. This means the opposite corners match perfectly.",
+          "The rule is: Opposite angles are always equal. Just copy the number!"
+        ]
+      },
+      {
+        id: "m2_q3",
+        concept: "Perimeter of Parallelogram",
+        text: "You are building a fence around a parallelogram garden. The top side is 12m and the left side is 7m. What is the perimeter?",
+        options: [
+          { label: "A", text: "19m", misconceptionTag: "You only added two sides! A perimeter goes all the way around the 4 sides." },
+          { label: "B", text: "38m" },
+          { label: "C", text: "24m", misconceptionTag: "This is just the top and bottom sides added together." },
+          { label: "D", text: "84m", misconceptionTag: "This is the area (12 x 7). We need the perimeter (addition)." }
+        ],
+        correctAnswer: "B",
+        hints: [
+          "Perimeter means walking all the way around the fence. A parallelogram has four sides.",
+          "Opposite sides are exactly the same length. If the top is 12, the bottom is 12. If the left is 7, the right is 7.",
+          "Add all four sides together: 12 + 12 + 7 + 7."
+        ]
+      },
+      {
+        id: "m2_q4",
+        concept: "Opposite Sides",
+        text: "In a parallelogram, the top side is 15 cm long. How long is the bottom side?",
+        options: [
+          { label: "A", text: "10 cm", misconceptionTag: "In a parallelogram, the opposite sides don't shrink or grow; they match exactly." },
+          { label: "B", text: "15 cm" },
+          { label: "C", text: "30 cm", misconceptionTag: "You doubled it! The sides just need to be equal, not doubled." },
+          { label: "D", text: "Not enough info", misconceptionTag: "A parallelogram has a strict rule about its opposite sides. We definitely have enough info!" }
+        ],
+        correctAnswer: "B",
+        hints: [
+          "Think about the 'train tracks' analogy. If the tracks got further apart or closer together, the train would crash.",
+          "The top and bottom sides of a parallelogram are 'opposite' sides.",
+          "Opposite sides are always exactly equal in length. Copy the number!"
+        ]
+      },
+      {
+        id: "m2_q5",
+        concept: "Angle Relationships",
+        text: "If Angle A in a parallelogram is 50°, and Angle C is directly opposite to it, what are the measures of all the other three angles?",
+        options: [
+          { label: "A", text: "50°, 50°, 50°", misconceptionTag: "That would mean all angles add up to 200°. A 4-sided shape must add up to 360°." },
+          { label: "B", text: "130°, 50°, 130°" },
+          { label: "C", text: "90°, 90°, 90°", misconceptionTag: "This only applies if the shape is a perfect rectangle." },
+          { label: "D", text: "180°, 50°, 180°", misconceptionTag: "180° is a flat straight line. A corner cannot be a flat line." }
+        ],
+        correctAnswer: "B",
+        hints: [
+          "Use your two rules: Opposite angles are equal, and adjacent (neighbor) angles add up to 180°.",
+          "If Angle A is 50°, the opposite Angle C is also 50°. To find the neighbors, subtract 50° from 180°.",
+          "180° - 50° = 130°. So the other angles must be 130°, 50°, and 130°."
+        ]
+      }
+    ]
   },
   {
-    id: "rhombus",
-    title: "The Rhombus",
-    icon: "diamond",
-    color: "hsl(38, 92%, 55%)",
-    story: "Think of a kite made from 4 sticks of equal length. When you connect opposite corners with strings, those crossing supports are forced to meet at a perfect right angle — like a plus sign (+). The equal sides create this special property!",
+    id: "module-3-diagonals",
+    title: "Power of Diagonals",
+    story: "Imagine you are building a wooden frame for a table. To make it super strong, you place two crossing wooden boards inside, forming an 'X'. These crossing boards are called diagonals. Where they cross, and how long they are, decides if your table will be a wobbly mess or a perfect shape!",
     questions: [
       {
-        id: "q4",
-        text: "What angle do the diagonals of a Rhombus form where they cross?",
+        id: "m3_q1",
+        concept: "Diagonals Bisect",
+        text: "To build a proper parallelogram frame, how must you nail the two cross-beams (diagonals) together?",
         options: [
-          { label: "A", text: "60°", misconception: "60° is the angle of an equilateral triangle. Rhombus diagonals have a different special property." },
-          { label: "B", text: "180°", misconception: "180° would mean the diagonals form a straight line — but they actually cross!" },
+          { label: "A", text: "At the ends", misconceptionTag: "Nailing them at the ends creates a triangle or an open shape, not a four-sided frame." },
+          { label: "B", text: "At exactly 90°", misconceptionTag: "That would specifically make a rhombus or square! A general parallelogram doesn't need 90°." },
+          { label: "C", text: "At their exact center points" },
+          { label: "D", text: "They don't need to cross", misconceptionTag: "Diagonals must connect opposite corners, so they absolutely must cross in the middle." }
+        ],
+        correctAnswer: "C",
+        hints: [
+          "For the frame to stay balanced, the cross-beams must cut each other exactly in half.",
+          "In geometry, this is called 'bisecting'. Where is the bisecting point on a piece of wood?",
+          "You must nail them exactly in the middle so they bisect each other."
+        ]
+      },
+      {
+        id: "m3_q2",
+        concept: "Rectangle Diagonals",
+        text: "If you want to build a perfect Rectangle, and your first diagonal strip is 15 cm long, how long must the second diagonal be?",
+        options: [
+          { label: "A", text: "10 cm", misconceptionTag: "If they are different lengths, the table will be skewed into a regular parallelogram." },
+          { label: "B", text: "15 cm" },
+          { label: "C", text: "30 cm", misconceptionTag: "That's double the length! It would ruin the shape." },
+          { label: "D", text: "Any length", misconceptionTag: "Rectangles have a very strict rule about their diagonals to keep the 90° corners perfect." }
+        ],
+        correctAnswer: "B",
+        hints: [
+          "Think about a normal parallelogram that has been stretched straight to make a rectangle. What happens to the cross-beams?",
+          "Because the corners are perfect 90° right angles, the distance between opposite corners is exactly the same.",
+          "The diagonals of a rectangle are always equal in length. Copy the number!"
+        ]
+      },
+      {
+        id: "m3_q3",
+        concept: "Rhombus Diagonals",
+        text: "At what exact angle do the diagonals of a Rhombus intersect?",
+        options: [
+          { label: "A", text: "45°", misconceptionTag: "That angle is too sharp. The equal sides of a rhombus force the cross-beams to be perfectly upright and flat." },
+          { label: "B", text: "60°", misconceptionTag: "60° is common in equilateral triangles, but not where rhombus diagonals cross." },
           { label: "C", text: "90°" },
-          { label: "D", text: "45°", misconception: "45° is half of a right angle. The diagonals of a rhombus form a full right angle." },
+          { label: "D", text: "180°", misconceptionTag: "180° is a flat straight line. The diagonals must cross each other." }
         ],
         correctAnswer: "C",
         hints: [
-          "180° means a flat line — diagonals definitely cross, they don't lie flat.",
-          "Equal edges force the crossing supports into a perfect 'plus sign' shape.",
-          "They are perpendicular — that means 90°!",
-        ],
+          "The diagonals of a rhombus form a perfect upright '+' sign in the middle.",
+          "The rule says diagonals of a rhombus are 'perpendicular bisectors.' What angle represents perpendicular lines?",
+          "Perpendicular lines always form perfect 90° right angles."
+        ]
       },
-    ],
-  },
-  {
-    id: "angle-sum",
-    title: "Angle Sum Property",
-    icon: "triangle",
-    color: "hsl(270, 55%, 60%)",
-    story: "Imagine designing a hexagon window (6 sides) for your dream treehouse. To make it fit perfectly, you need to know the total 'space' inside all the corners combined. Here's the trick: any polygon can be split into triangles, and each triangle has 180°!",
-    questions: [
       {
-        id: "q5",
-        text: "What is the total sum of all interior angles in a 6-sided hexagon?",
+        id: "m3_q4",
+        concept: "Diagonal Bisection Length",
+        text: "In a parallelogram, the two diagonals cross at the center. If one full diagonal is 20 cm long, how far is it from the corner to the center dot?",
         options: [
-          { label: "A", text: "360°", misconception: "360° is the sum of EXTERIOR angles for any polygon, not the interior angles of a hexagon." },
-          { label: "B", text: "540°", misconception: "540° is the interior angle sum of a PENTAGON (5 sides). A hexagon has one more side!" },
-          { label: "C", text: "720°" },
-          { label: "D", text: "1080°", misconception: "1080° is the interior angle sum of an OCTAGON (8 sides). Count again — a hexagon has only 6 sides." },
+          { label: "A", text: "20 cm", misconceptionTag: "20 cm is the entire length from corner to corner. We only want the distance to the middle." },
+          { label: "B", text: "5 cm", misconceptionTag: "You divided by 4. The center only cuts the line into 2 pieces." },
+          { label: "C", text: "10 cm" },
+          { label: "D", text: "40 cm", misconceptionTag: "You doubled the length. We need to find a smaller piece, not a bigger one." }
         ],
         correctAnswer: "C",
         hints: [
-          "A square (4 sides) can be split into 2 triangles inside. How many triangles fit in a 6-sided shape?",
-          "Use the formula: (n − 2) × 180°. Here, n is 6.",
-          "4 triangles × 180° = 720°!",
-        ],
+          "The diagonals of a parallelogram 'bisect' each other.",
+          "To bisect means to cut exactly in half.",
+          "Simply divide the total length (20 cm) by 2."
+        ]
       },
       {
-        id: "q5b",
-        text: "What is the total sum of interior angles in an 8-sided Octagon?",
+        id: "m3_q5",
+        concept: "Diagonal Properties Comparison",
+        text: "Which shape has diagonals that are BOTH equal in length AND cross each other at a perfect 90° angle?",
         options: [
-          { label: "A", text: "720°", misconception: "That's for a 6-sided hexagon. Try the formula (n-2)×180 again." },
-          { label: "B", text: "1080°" },
-          { label: "C", text: "1440°", misconception: "That's a bit too high! That would be for a 10-sided shape." },
-          { label: "D", text: "360°", misconception: "360° is only for 4-sided quadrilaterals." },
-        ],
-        correctAnswer: "B",
-        hints: [
-          "A hexagon (6 sides) has an interior sum of 720°. An octagon has 2 more sides.",
-          "Use (n − 2) × 180°. For an octagon, n = 8.",
-          "(8 − 2) × 180° = 6 × 180° = 1080°!",
-        ],
-      },
-    ],
-  },
-  {
-    id: "kite",
-    title: "Properties of a Kite",
-    icon: "wind",
-    color: "hsl(200, 60%, 52%)",
-    story: "To make a kite fly straight and true, the crossing support sticks (diagonals) must have a very specific relationship. Two pairs of neighboring sides are equal, and the sticks always cross at a special angle — like a perfect plus sign!",
-    questions: [
-      {
-        id: "q6",
-        text: "Which of these is a 'must-have' rule for a geometric kite?",
-        options: [
-          { label: "A", text: "Equal diagonals", misconception: "Equal diagonals is a property of a RECTANGLE, not a kite. In a kite, the diagonals are usually different lengths." },
-          { label: "B", text: "Diagonals cross at 90°" },
-          { label: "C", text: "Opposite sides are parallel", misconception: "Parallel opposite sides make it a PARALLELOGRAM. A kite has equal ADJACENT sides, not parallel opposite ones." },
-          { label: "D", text: "All 4 angles are 90°", misconception: "All 90° angles would make it a RECTANGLE or SQUARE. A kite usually has unequal angles." },
-        ],
-        correctAnswer: "B",
-        hints: [
-          "Kites aren't parallelograms — their neighbors are equal, not their opposites!",
-          "Think of the 'plus-sign' shape the support sticks make in the middle.",
-          "Perpendicular means they meet at exactly 90 degrees!",
-        ],
-      },
-      {
-        id: "q6b",
-        text: "In a parallelogram, if one diagonal segment from corner to center is 6cm, what is the full length?",
-        options: [
-          { label: "A", text: "6cm", misconception: "6cm is only the distance to the center. Remember, diagonals 'bisect' each other." },
-          { label: "B", text: "12cm" },
-          { label: "C", text: "3cm", misconception: "Check your math! To 'bisect' means to cut in half, not divide by two again." },
-          { label: "D", text: "18cm", misconception: "That's three times the length. We only need to double it to get the full beam." },
-        ],
-        correctAnswer: "B",
-        hints: [
-          "The diagonals of a parallelogram bisect each other — they cut each other in half.",
-          "If one half is 6cm, what is the full length?",
-          "6cm × 2 = 12cm!",
-        ],
-      },
-    ],
-  },
-  {
-    id: "rectangle",
-    title: "Rectangles",
-    icon: "rectangle-horizontal",
-    color: "hsl(150, 50%, 45%)",
-    story: "You are building a door frame. If the diagonal from the top-left corner to the bottom-right corner is exactly 2 meters, a special rectangle rule tells you exactly what the other diagonal measures — without even getting out your tape!",
-    questions: [
-      {
-        id: "q7",
-        text: "If one diagonal of a perfect rectangle is 2 meters, what must the other diagonal be?",
-        options: [
-          { label: "A", text: "1 meter", misconception: "The diagonals of a rectangle are EQUAL, not half of each other. You might be thinking of a midpoint." },
-          { label: "B", text: "2 meters" },
-          { label: "C", text: "4 meters", misconception: "4 meters would be DOUBLE the diagonal. A rectangle's diagonals are equal, not doubled!" },
-          { label: "D", text: "It varies by width", misconception: "In a rectangle, the diagonals are ALWAYS equal regardless of width or height. This is a guaranteed rule!" },
-        ],
-        correctAnswer: "B",
-        hints: [
-          "A rectangle is a very 'even' parallelogram — everything is balanced.",
-          "One of a rectangle's superpowers is perfectly identical diagonals.",
-          "If one diagonal is 2m, the other must be exactly 2m too!",
-        ],
-      },
-      {
-        id: "q7b",
-        text: "At what angle do the diagonals of a Rhombus meet in the center?",
-        options: [
-          { label: "A", text: "45°", misconception: "That's too sharp. Because all sides are equal, they cross perfectly straight up and across." },
-          { label: "B", text: "60°", misconception: "A rhombus cross is always perfectly 'square' (perpendicular)." },
-          { label: "C", text: "90°" },
-          { label: "D", text: "180°", misconception: "180° is a flat line. They must cross to form a plus sign." },
+          { label: "A", text: "Rectangle", misconceptionTag: "A rectangle has equal diagonals, but they usually don't cross at 90° (unless it's a square)." },
+          { label: "B", text: "Rhombus", misconceptionTag: "A rhombus crosses at 90°, but its diagonals are usually different lengths (one long, one short)." },
+          { label: "C", text: "Square" },
+          { label: "D", text: "Parallelogram", misconceptionTag: "A standard parallelogram doesn't have equal diagonals, nor do they cross at 90°." }
         ],
         correctAnswer: "C",
         hints: [
-          "The diagonals of a rhombus are perpendicular — they form a plus sign.",
-          "Perpendicular lines meet at a specific well-known angle.",
-          "That angle is 90°!",
-        ],
-      },
-    ],
+          "We are looking for a shape that follows the Rectangle rule (equal length) AND the Rhombus rule (90° cross).",
+          "What is the 'ultimate' perfect shape that belongs to both of those families?",
+          "The Square takes the best diagonal rules from both the rectangle and the rhombus!"
+        ]
+      }
+    ]
   },
   {
-    id: "square-identity",
-    title: "The Square's Secret",
-    icon: "crown",
-    color: "hsl(45, 85%, 50%)",
-    story: "A square is being interviewed for a job at the Shape Academy. It claims: \"I am actually a Rhombus AND a Rectangle at the same time!\" The interviewer looks skeptical. Let's check if the square is telling the truth...",
+    id: "module-4-rhombus-kite",
+    title: "Kites & Rhombuses",
+    story: "Think of a real paper kite flying in the sky. The two top edges are short and equal, and the two bottom edges are long and equal. Now, imagine using magic to stretch the top edges so all four sides become the exact same length. Your kite just transformed into a beautiful, balanced shape called a Rhombus!",
     questions: [
       {
-        id: "q8",
-        text: "A square says: \"I am both a Rhombus and a Rectangle.\" Is it telling the truth?",
+        id: "m4_q1",
+        concept: "Kite Sides",
+        text: "Which statement perfectly describes the sides of a standard Kite?",
         options: [
-          { label: "A", text: "Yes — it has 4 equal sides AND 90° corners" },
-          { label: "B", text: "No — it is just a square", misconception: "A square isn't 'just' a square! Shapes can belong to multiple families if they follow all the rules. Think of it like being both a student and a musician." },
-          { label: "C", text: "No — a rhombus must be slanted", misconception: "A rhombus does NOT have to be slanted! The only rule is 4 equal sides. A square has 4 equal sides, so it qualifies." },
-          { label: "D", text: "Only if it's turned sideways", misconception: "Rotating a shape doesn't change its properties! A square is still a square whether it's straight or tilted." },
+          { label: "A", text: "All four sides are equal", misconceptionTag: "That would make it a Rhombus or a Square! A kite usually has long bottom sides and short top sides." },
+          { label: "B", text: "Opposite sides are equal", misconceptionTag: "That is the rule for a Parallelogram. In a kite, opposite sides are different lengths." },
+          { label: "C", text: "Two distinct pairs of touching (consecutive) sides are equal" },
+          { label: "D", text: "No sides are equal", misconceptionTag: "If no sides were equal, it would just be a random, messy quadrilateral." }
         ],
-        correctAnswer: "A",
+        correctAnswer: "C",
         hints: [
-          "What are the rules for a Rhombus? Just 4 equal sides. Does a square have those?",
-          "What are the rules for a Rectangle? All 90° corners. Does a square have those?",
-          "Since it follows ALL the rules of both shapes, it belongs to both families!",
-        ],
+          "Think of a real paper kite. The top two edges match each other, and the long bottom two edges match each other.",
+          "Unlike a parallelogram where 'opposite' sides match, a kite has matching sides that are right next to each other.",
+          "Look for 'consecutive' (touching) pairs of equal length."
+        ]
       },
       {
-        id: "q8b",
-        text: "A square claims it can do everything a Rhombus can do. Is it telling the truth?",
+        id: "m4_q2",
+        concept: "Kite to Rhombus",
+        text: "What happens if you take a Kite and make all four of its sides exactly the same length?",
         options: [
-          { label: "A", text: "Yes" },
-          { label: "B", text: "No", misconception: "Actually, a square has 4 equal sides and perpendicular diagonals — just like a Rhombus!" },
-          { label: "C", text: "Only on weekends", misconception: "Shape properties don't change with the day! Math rules are always consistent." },
-          { label: "D", text: "Only if rotated", misconception: "Orientation doesn't change the rules of the shape family." },
+          { label: "A", text: "It becomes a Trapezium", misconceptionTag: "A trapezium only has one pair of parallel sides. Making all sides equal creates a different shape." },
+          { label: "B", text: "It becomes a Rectangle", misconceptionTag: "A rectangle requires 90° corners. Changing the side lengths of a kite doesn't guarantee 90° corners." },
+          { label: "C", text: "It becomes a Rhombus" },
+          { label: "D", text: "It breaks", misconceptionTag: "Shapes don't break in geometry! They just evolve into more specific families." }
         ],
-        correctAnswer: "A",
+        correctAnswer: "C",
         hints: [
-          "What makes a Rhombus special? 4 equal sides and perpendicular diagonals.",
-          "Does a square have 4 equal sides? Does it have perpendicular diagonals?",
-          "Yes to both! So a square can do everything a Rhombus can.",
-        ],
+          "You now have a shape with four equal sides, but it might still be tilted like a kite.",
+          "What is the special mathematical name for a parallelogram where every side is perfectly equal?",
+          "An equilateral quadrilateral is called a Rhombus."
+        ]
       },
-    ],
+      {
+        id: "m4_q3",
+        concept: "Rhombus Perimeter",
+        text: "If one side of a rhombus is 8 cm, what is the perimeter of the entire shape?",
+        options: [
+          { label: "A", text: "16 cm", misconceptionTag: "You only added two sides! Perimeter goes all the way around." },
+          { label: "B", text: "32 cm" },
+          { label: "C", text: "64 cm", misconceptionTag: "This is the area if it were a square (8x8). Perimeter is addition." },
+          { label: "D", text: "24 cm", misconceptionTag: "You added three sides. A rhombus has four sides." }
+        ],
+        correctAnswer: "B",
+        hints: [
+          "Remember the defining rule of a rhombus regarding its sides. Are they different lengths?",
+          "A rhombus is like a square that got pushed over—all four sides are exactly the same.",
+          "Simply multiply the one side you know by 4. 8 + 8 + 8 + 8 = ?"
+        ]
+      },
+      {
+        id: "m4_q4",
+        concept: "Kite Diagonals",
+        text: "In a Kite, there is one long diagonal stick going top-to-bottom, and one short diagonal stick going left-to-right. What is true about how they cross?",
+        options: [
+          { label: "A", text: "They don't cross at all", misconceptionTag: "Diagonals connect opposite corners, so they must cross in the middle of the kite." },
+          { label: "B", text: "They cross at exactly 90°" },
+          { label: "C", text: "They cut EACH OTHER in half perfectly", misconceptionTag: "Only the short horizontal stick gets cut in half. The vertical stick is longer at the bottom!" },
+          { label: "D", text: "They are the exact same length", misconceptionTag: "If they were the same length and crossed at 90°, you would have a square, not a kite." }
+        ],
+        correctAnswer: "B",
+        hints: [
+          "Think about the wooden frame of a real flying kite. The support sticks form a perfect '+' sign.",
+          "While they don't both cut each other in half, they still cross straight up and straight across.",
+          "A perfect upright '+' sign means they are perpendicular, crossing at exactly 90°."
+        ]
+      },
+      {
+        id: "m4_q5",
+        concept: "Rhombus Adjacent Angles",
+        text: "A Rhombus is a parallelogram with 4 equal sides. If one angle of a Rhombus is 120°, what is the angle right next to it?",
+        options: [
+          { label: "A", text: "120°", misconceptionTag: "That would be the OPPOSITE angle. Neighboring angles in a rhombus don't match." },
+          { label: "B", text: "90°", misconceptionTag: "The diagonals cross at 90°, but the corner angles of a tilted rhombus are different." },
+          { label: "C", text: "60°" },
+          { label: "D", text: "180°", misconceptionTag: "180° is the total they add up to, not the single angle." }
+        ],
+        correctAnswer: "C",
+        hints: [
+          "Because a Rhombus is still a part of the Parallelogram family, it follows the exact same angle rules.",
+          "Adjacent (neighboring) angles must add up to 180° to keep the parallel lines balanced.",
+          "180° - 120° = 60°."
+        ]
+      }
+    ]
   },
+  {
+    id: "module-5-trapezium-hierarchy",
+    title: "Trapeziums & Families",
+    story: "Shapes have families! A Trapezium is very relaxed—it only needs one pair of lines going in the exact same direction, like the top and bottom of a lamp shade. But a Square is the ultimate rule-follower. It perfectly obeys all the rules of a Rectangle AND a Rhombus at the exact same time!",
+    questions: [
+      {
+        id: "m5_q1",
+        concept: "Trapezium Identification",
+        text: "Look at the side of a popcorn bucket. The top and bottom are straight and parallel, but the sides lean in. What shape is this?",
+        options: [
+          { label: "A", text: "Parallelogram", misconceptionTag: "A parallelogram requires BOTH pairs of opposite sides to be parallel." },
+          { label: "B", text: "Trapezium" },
+          { label: "C", text: "Rhombus", misconceptionTag: "A rhombus has four equal sides and two pairs of parallel lines." },
+          { label: "D", text: "Kite", misconceptionTag: "A kite doesn't have parallel lines; it has matching touching lines." }
+        ],
+        correctAnswer: "B",
+        hints: [
+          "If the side lines lean in, they will eventually crash into each other. They are not parallel.",
+          "A parallelogram is strict and needs two pairs of 'train tracks'. This shape is more relaxed.",
+          "A shape with exactly ONE pair of parallel lines is called a Trapezium."
+        ]
+      },
+      {
+        id: "m5_q2",
+        concept: "Isosceles Trapezium",
+        text: "If the two 'leaning' (non-parallel) sides of a trapezium are exactly the same length, what do we call it?",
+        options: [
+          { label: "A", text: "Regular Trapezium", misconceptionTag: "Regular means all sides and angles are equal. This shape only has two equal sides." },
+          { label: "B", text: "Isosceles Trapezium" },
+          { label: "C", text: "Rhombus", misconceptionTag: "A rhombus must have ALL four sides equal." },
+          { label: "D", text: "Square", misconceptionTag: "A square has four equal sides and four right angles." }
+        ],
+        correctAnswer: "B",
+        hints: [
+          "Think of a triangle that has two sides of the same length. What is that called?",
+          "When the non-parallel sides match, the shape becomes perfectly symmetrical, just like that special type of triangle.",
+          "Matching non-parallel sides makes it an Isosceles Trapezium."
+        ]
+      },
+      {
+        id: "m5_q3",
+        concept: "Quadrilateral Hierarchy",
+        text: "Which shape is so perfect that it belongs to the Rectangle family, the Rhombus family, AND the Parallelogram family?",
+        options: [
+          { label: "A", text: "Kite", misconceptionTag: "A kite isn't even a parallelogram, so it can't be in the rectangle or rhombus families." },
+          { label: "B", text: "Trapezium", misconceptionTag: "A trapezium only has one pair of parallel sides." },
+          { label: "C", text: "Square" },
+          { label: "D", text: "Hexagon", misconceptionTag: "A hexagon has 6 sides. The families we are talking about are quadrilaterals (4 sides)." }
+        ],
+        correctAnswer: "C",
+        hints: [
+          "We need a shape with equal 90° angles (like a rectangle) AND 4 equal sides (like a rhombus).",
+          "What is the most 'Regular' 4-sided shape you can think of?",
+          "A Square follows every rule, making it the ultimate member of all those shape families."
+        ]
+      },
+      {
+        id: "m5_q4",
+        concept: "Rectangle vs Square",
+        text: "A friend tells you: 'All rectangles are squares.' Are they right or wrong?",
+        options: [
+          { label: "A", text: "Right, because both have 90° corners.", misconceptionTag: "Having 90° corners is the rule for rectangles, but a square needs something extra." },
+          { label: "B", text: "Right, because both have 4 sides.", misconceptionTag: "A lot of shapes have 4 sides without being squares (like kites or trapeziums)." },
+          { label: "C", text: "Wrong, because a rectangle doesn't have to have 4 equal sides." },
+          { label: "D", text: "Wrong, because a rectangle has no parallel lines.", misconceptionTag: "A rectangle definitely has parallel lines (it's a parallelogram)." }
+        ],
+        correctAnswer: "C",
+        hints: [
+          "Think about a very long, skinny TV screen. That is a rectangle. Does it look like a square?",
+          "A square has a strict rule: all 4 sides must be equal. A rectangle only requires opposite sides to be equal.",
+          "Therefore, a square is a special rectangle, but a normal rectangle is NOT a square."
+        ]
+      },
+      {
+        id: "m5_q5",
+        concept: "Trapezium Properties",
+        text: "Which of the following statements about a Trapezium is TRUE?",
+        options: [
+          { label: "A", text: "It must have two pairs of parallel sides.", misconceptionTag: "That is the definition of a parallelogram, which is stricter." },
+          { label: "B", text: "Its diagonals always bisect each other.", misconceptionTag: "Trapezium diagonals generally do NOT cut each other exactly in half." },
+          { label: "C", text: "It only needs exactly ONE pair of parallel sides." },
+          { label: "D", text: "All of its angles must add up to 540°.", misconceptionTag: "A trapezium has 4 sides, so its angles add up to 360°." }
+        ],
+        correctAnswer: "C",
+        hints: [
+          "Think of a trapezium as a 'half-finished' parallelogram.",
+          "Look at the top and bottom of a lamp shade: they never touch. But the sides lean inward and would eventually crash.",
+          "A trapezium only has one set of lines that never touch (one pair of parallel sides)."
+        ]
+      }
+    ]
+  }
 ];

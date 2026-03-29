@@ -15,6 +15,9 @@ interface GameState {
   sessionId: string;
   answers: AnswerRecord[];
   currentModule: string | null;
+  masteryScores: Record<string, number>;
+  errorCount: number;
+  showRemedial: boolean;
   
   setStudentId: (id: string) => void;
   setCurrentModule: (id: string | null) => void;
@@ -26,6 +29,9 @@ interface GameState {
   getAccuracy: () => number;
   getTotalHintsUsed: () => number;
   getTopicCompletion: () => Record<string, number>;
+  handleAnswer: (isCorrect: boolean, hintsUsed: number, moduleId: string) => number;
+  resetQuestionState: () => void;
+  passSafetyGate: () => void;
   exportPayload: () => object;
   reset: () => void;
 }
@@ -39,6 +45,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   sessionId: generateSessionId(),
   answers: [],
   currentModule: null,
+  masteryScores: {},
+  errorCount: 0,
+  showRemedial: false,
 
   setStudentId: (id) => set({ studentId: id }),
   setCurrentModule: (id) => set({ currentModule: id }),
@@ -85,6 +94,34 @@ export const useGameStore = create<GameState>((set, get) => ({
     return result;
   },
 
+  handleAnswer: (isCorrect, hintsUsed, moduleId) => {
+    const state = get();
+    const currentScore = state.masteryScores[moduleId] ?? 0;
+
+    if (!isCorrect) {
+      const nextErrorCount = state.errorCount + 1;
+      set({
+        errorCount: nextErrorCount,
+        showRemedial: nextErrorCount >= 3,
+      });
+      return currentScore;
+    }
+
+    let nextScore = currentScore;
+    if (hintsUsed === 0) {
+      nextScore = Math.max(currentScore, 0.9);
+    } else {
+      nextScore = Math.min(1, currentScore + 0.3);
+    }
+
+    set({ masteryScores: { ...state.masteryScores, [moduleId]: nextScore } });
+    return nextScore;
+  },
+
+  resetQuestionState: () => set({ errorCount: 0, showRemedial: false }),
+
+  passSafetyGate: () => set({ errorCount: 0, showRemedial: false }),
+
   exportPayload: () => {
     const state = get();
     return {
@@ -99,5 +136,13 @@ export const useGameStore = create<GameState>((set, get) => ({
     };
   },
 
-  reset: () => set({ studentId: null, sessionId: generateSessionId(), answers: [], currentModule: null }),
+  reset: () => set({
+    studentId: null,
+    sessionId: generateSessionId(),
+    answers: [],
+    currentModule: null,
+    masteryScores: {},
+    errorCount: 0,
+    showRemedial: false,
+  }),
 }));
