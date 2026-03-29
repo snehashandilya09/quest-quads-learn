@@ -9,6 +9,45 @@ const Dashboard = () => {
   const totalCorrect = store.getCorrectCount();
   const totalWrong = store.getWrongCount();
   const totalAnswered = store.answers.length;
+  const masteryScores = store.masteryScores;
+
+  const conceptKeyByQuestionId: Record<string, string> = {
+    m1_q5: "polygon_angle_sum",
+    m2_q1: "parallelogram_adjacent_angles",
+    m2_q2: "parallelogram_opposite_sides",
+    m2_q4: "parallelogram_opposite_sides",
+    m2_q5: "parallelogram_adjacent_angles",
+    m5_q3: "hierarchical_classification_square_rectangle",
+  };
+
+  const getModuleMastery = (moduleId: string) => {
+    const moduleData = modules.find((mod) => mod.id === moduleId);
+    if (!moduleData) return 0;
+
+    const conceptIds = moduleData.questions
+      .map((q) => conceptKeyByQuestionId[q.id])
+      .filter(Boolean);
+
+    if (conceptIds.length === 0) {
+      return masteryScores[moduleId] ?? 0;
+    }
+
+    const total = conceptIds.reduce((sum, id) => sum + (masteryScores[id] ?? 0), 0);
+    const average = total / conceptIds.length;
+    return average || (masteryScores[moduleId] ?? 0);
+  };
+
+  const unlockedModules = new Set<string>([modules[0]?.id].filter(Boolean));
+  modules.forEach((mod, index) => {
+    const avg = getModuleMastery(mod.id);
+    if (avg >= 0.8 && modules[index + 1]) {
+      unlockedModules.add(modules[index + 1].id);
+    }
+  });
+
+  const firstTryAccuracy = store.totalQuestionsEncountered > 0
+    ? Math.round((store.firstTryCorrects / store.totalQuestionsEncountered) * 100)
+    : 0;
 
   const stats = [
     { label: "Solved", value: totalAnswered, icon: CheckCircle2, color: "hsl(var(--primary))" },
@@ -54,12 +93,12 @@ const Dashboard = () => {
             <div
               className="progress-bar-fill"
               style={{
-                width: `${store.getAccuracy()}%`,
+                width: `${firstTryAccuracy}%`,
                 background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)))`,
               }}
             />
           </div>
-          <span className="text-2xl font-bold gradient-text">{store.getAccuracy()}%</span>
+          <span className="text-2xl font-bold gradient-text">{firstTryAccuracy}%</span>
         </div>
       </motion.div>
 
@@ -73,23 +112,28 @@ const Dashboard = () => {
         <h2 className="font-bold text-lg text-foreground mb-5">🗺️ Mastery Map</h2>
         <div className="space-y-4">
           {modules.map((mod) => {
-            const moduleAnswers = store.getModuleAnswers(mod.id);
-            const correctCount = moduleAnswers.filter(a => a.correct).length;
-            const totalQ = mod.questions.length;
-            const pct = totalQ > 0 ? Math.round((correctCount / totalQ) * 100) : 0;
+            const avgMastery = getModuleMastery(mod.id);
+            const pct = Math.round(avgMastery * 100);
+            const isUnlocked = unlockedModules.has(mod.id);
 
             return (
               <div key={mod.id}>
                 <div className="flex justify-between text-sm mb-1.5">
-                  <span className="font-semibold text-foreground">{mod.title}</span>
-                  <span className="text-muted-foreground">{correctCount}/{totalQ} ({pct}%)</span>
+                  <span className={`font-semibold ${isUnlocked ? "text-foreground" : "text-muted-foreground"}`}>
+                    {mod.title}
+                  </span>
+                  <span className={isUnlocked ? "text-foreground" : "text-muted-foreground"}>
+                    {pct}% {isUnlocked ? "Unlocked" : "Locked"}
+                  </span>
                 </div>
                 <div className="progress-bar-track">
                   <div
                     className="progress-bar-fill"
                     style={{
                       width: `${pct}%`,
-                      background: mod.color,
+                      background: isUnlocked
+                        ? "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)))"
+                        : "linear-gradient(90deg, hsl(var(--muted)), hsl(var(--muted-foreground)))",
                     }}
                   />
                 </div>

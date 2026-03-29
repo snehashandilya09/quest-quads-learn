@@ -1,6 +1,6 @@
 import { useGameStore } from "@/store/useGameStore";
 import { modules } from "@/data/curriculum";
-import { LayoutDashboard, Download, LogOut, Hexagon, RotateCw, Square, Diamond, Triangle, Wind, RectangleHorizontal, Crown } from "lucide-react";
+import { LayoutDashboard, LogOut, Hexagon, RotateCw, Square, Diamond, Triangle, Wind, RectangleHorizontal, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -22,16 +22,6 @@ interface Props {
 const AppSidebar = ({ currentView, onNavigate }: Props) => {
   const store = useGameStore();
 
-  const handleExport = () => {
-    const payload = store.exportPayload();
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `quadrilateral-quest-${store.studentId}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
 
   return (
     <div className="glass-sidebar w-64 min-h-screen p-5 flex flex-col">
@@ -74,13 +64,6 @@ const AppSidebar = ({ currentView, onNavigate }: Props) => {
       </nav>
 
       <div className="space-y-2 pt-4 border-t border-border/50">
-        <button
-          onClick={handleExport}
-          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-foreground hover:bg-primary/10 transition-colors"
-        >
-          <Download className="w-4 h-4" />
-          Finish & Submit
-        </button>
         <button
           onClick={() => store.reset()}
           className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"

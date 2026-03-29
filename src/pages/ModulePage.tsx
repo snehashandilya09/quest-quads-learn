@@ -4,8 +4,6 @@ import { Module, Option, modules } from "@/data/curriculum";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import CarpentersChallenge from "@/components/CarpentersChallenge";
-import VennDiagramTool from "@/components/VennDiagramTool";
-import InteractiveTrapeziumProperties from "@/components/InteractiveTrapeziumProperties";
 import PolygonTypeVisualizer from "@/components/PolygonTypeVisualizer";
 import InteractiveParallelogram from "@/components/InteractiveParallelogram";
 import PerimeterVisualizer from "@/components/PerimeterVisualizer";
@@ -24,9 +22,12 @@ const ModulePage = ({ module, onNavigate }: Props) => {
   const {
     errorCount,
     showRemedial,
-    handleAnswer,
+    submitAnswerAndUpdateProfile,
+    recordAnswer,
+    recordQuestionAttempt,
     resetQuestionState,
     passSafetyGate,
+    studentId,
   } = useGameStore();
 
   const [currentModuleIndex, setCurrentModuleIndex] = useState(() => {
@@ -36,6 +37,8 @@ const ModulePage = ({ module, onNavigate }: Props) => {
   });
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isModuleMastered, setIsModuleMastered] = useState(false);
+  const [firstTryCorrects, setFirstTryCorrects] = useState(0);
+  const [isFirstTry, setIsFirstTry] = useState(true);
   const [phase, setPhase] = useState<"learn" | "test">("learn");
   const [selectedOption, setSelectedOption] = useState<Option | null>(null);
   const [wrongMessage, setWrongMessage] = useState<string | null>(null);
@@ -51,6 +54,8 @@ const ModulePage = ({ module, onNavigate }: Props) => {
       setCurrentModuleIndex(index);
       setCurrentQuestionIndex(0);
       setIsModuleMastered(false);
+      setFirstTryCorrects(0);
+      setIsFirstTry(true);
       setPhase("learn");
       setSelectedOption(null);
       setWrongMessage(null);
@@ -73,6 +78,7 @@ const ModulePage = ({ module, onNavigate }: Props) => {
     setWrongMessage(null);
     setHintsRevealed(0);
     setIsCorrect(false);
+    setIsFirstTry(true);
     setShowBucketAnalysis(false);
     setShowNonIsosceles(false);
   };
@@ -82,17 +88,67 @@ const ModulePage = ({ module, onNavigate }: Props) => {
     setHintsRevealed((prev) => Math.min(3, prev + 1));
   };
 
+  const conceptKeyByQuestionId: Record<string, string> = {
+    m1_q5: "polygon_angle_sum",
+    m2_q1: "parallelogram_adjacent_angles",
+    m2_q2: "parallelogram_opposite_sides",
+    m2_q4: "parallelogram_opposite_sides",
+    m2_q5: "parallelogram_adjacent_angles",
+    m5_q3: "hierarchical_classification_square_rectangle",
+  };
+
+  const conceptId = conceptKeyByQuestionId[question.id] ?? moduleData.id;
+
   const handleCorrectAnswer = () => {
-    const hintsUsed = errorCount;
-    handleAnswer(true, hintsUsed, moduleData.id);
+    const nextFirstTryCorrects = isFirstTry ? firstTryCorrects + 1 : firstTryCorrects;
+    const hintsUsedNow = Math.max(hintsRevealed, errorCount);
+    submitAnswerAndUpdateProfile(
+      studentId ?? "anonymous",
+      conceptId,
+      true,
+      null
+    );
+    recordAnswer({
+      moduleId: moduleData.id,
+      questionId: question.id,
+      selectedAnswer: selectedOption?.label ?? "",
+      correct: true,
+      hintsUsed: hintsUsedNow,
+      retryCount: errorCount,
+      timestamp: Date.now(),
+    });
+    recordQuestionAttempt(isFirstTry);
     resetQuestionState();
     setWrongMessage(null);
     setIsCorrect(true);
+    setIsFirstTry(false);
+    setFirstTryCorrects(nextFirstTryCorrects);
+
+    if (nextFirstTryCorrects >= 3) {
+      setIsModuleMastered(true);
+    }
   };
 
   const handleWrongAnswer = (selectedOption: Option) => {
     const nextErrorCount = errorCount + 1;
-    handleAnswer(false, 0, moduleData.id);
+    const hintsUsedNow = Math.max(hintsRevealed, nextErrorCount);
+    submitAnswerAndUpdateProfile(
+      studentId ?? "anonymous",
+      conceptId,
+      false,
+      selectedOption.misconceptionTag ?? null
+    );
+    recordAnswer({
+      moduleId: moduleData.id,
+      questionId: question.id,
+      selectedAnswer: selectedOption.label,
+      correct: false,
+      hintsUsed: hintsUsedNow,
+      retryCount: nextErrorCount,
+      timestamp: Date.now(),
+    });
+    recordQuestionAttempt(false);
+    setIsFirstTry(false);
 
     if (nextErrorCount === 3 && selectedOption.misconceptionTag) {
       console.log(selectedOption.misconceptionTag);
@@ -104,6 +160,7 @@ const ModulePage = ({ module, onNavigate }: Props) => {
 
   const handleRemedialContinue = () => {
     resetQuestionState();
+    setIsFirstTry(true);
 
     if (currentQuestionIndex >= moduleData.questions.length - 1) {
       setIsModuleMastered(true);
@@ -129,6 +186,8 @@ const ModulePage = ({ module, onNavigate }: Props) => {
     setCurrentModuleIndex(nextIndex);
     setCurrentQuestionIndex(0);
     setIsModuleMastered(false);
+    setFirstTryCorrects(0);
+    setIsFirstTry(true);
     setPhase("learn");
     resetQuestionUI();
     resetQuestionState();
@@ -138,11 +197,6 @@ const ModulePage = ({ module, onNavigate }: Props) => {
     }
   };
 
-  const isModuleFive = moduleData.id === "module-5-trapezium-hierarchy";
-  const showModuleFiveVenn = isModuleFive && (question.id === "m5_q3" || question.id === "m5_q4");
-  const showModuleFiveBucket = isModuleFive && question.id === "m5_q1";
-  const showModuleFiveIsosceles = isModuleFive && question.id === "m5_q2";
-  const showModuleFiveProperties = isModuleFive && question.id === "m5_q5";
   const isModuleTwo = moduleData.id === "module-2-parallelograms";
   const showModuleTwoAngles = isModuleTwo && (question.id === "m2_q1" || question.id === "m2_q2");
   const showModuleTwoPerimeter = isModuleTwo && question.id === "m2_q3";
@@ -153,6 +207,16 @@ const ModulePage = ({ module, onNavigate }: Props) => {
   const showModuleOneRegular = moduleData.id === "module-1-polygons" && question.id === "m1_q2";
   const showModuleOneExterior = moduleData.id === "module-1-polygons" && question.id === "m1_q3";
   const showModuleOnePolygonGate = moduleData.id === "module-1-polygons" && question.id === "m1_q4";
+  const hasRemediationContent =
+    showModuleTwoSideEquality ||
+    showModuleTwoFullAngles ||
+    showModuleTwoPerimeter ||
+    showModuleTwoAngles ||
+    showModuleOneConcave ||
+    showModuleOneRegular ||
+    showModuleOneExterior ||
+    showModuleOnePolygonGate ||
+    showModuleThreeCarpenter;
 
   if (isModuleMastered) {
     return (
@@ -259,7 +323,7 @@ const ModulePage = ({ module, onNavigate }: Props) => {
                 ))}
               </div>
             )}
-            {showRemedial && (
+            {showRemedial && hasRemediationContent && (
               <div className="mt-6 rounded-2xl border border-warning/30 bg-warning/5 p-4 space-y-4">
                 <div className="text-sm font-semibold text-foreground">Remediation Zone</div>
                 {showModuleTwoSideEquality && (
@@ -287,159 +351,6 @@ const ModulePage = ({ module, onNavigate }: Props) => {
                       </button>
                     </div>
                   </div>
-                )}
-                {showModuleFiveVenn && (
-                  <VennDiagramTool goalText="Goal: Prove why a Square belongs to the Rectangle family." />
-                )}
-                {showModuleFiveBucket && (
-                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-4">
-                    <div className="text-sm font-semibold text-amber-900">Visual Comparison</div>
-                    <div className="rounded-lg border border-amber-200 bg-white p-4">
-                      <svg viewBox="0 0 260 180" className="h-40 w-full">
-                        <polygon
-                          points="40,30 220,30 200,150 60,150"
-                          fill="none"
-                          stroke="#94a3b8"
-                          strokeWidth={2}
-                          strokeDasharray="6 6"
-                        />
-                        <line x1={40} y1={30} x2={220} y2={30} stroke="#22c55e" strokeWidth={6} />
-                        <line x1={60} y1={150} x2={200} y2={150} stroke="#22c55e" strokeWidth={6} />
-                        <line x1={40} y1={30} x2={60} y2={150} stroke="#f97316" strokeWidth={6} />
-                        <line x1={220} y1={30} x2={200} y2={150} stroke="#f97316" strokeWidth={6} />
-
-                        <line x1={80} y1={12} x2={180} y2={12} stroke="#22c55e" strokeWidth={2} />
-                        <text x={130} y={10} textAnchor="middle" fill="#15803d" fontSize={10} fontWeight={600}>
-                          Parallel Tracks (Top & Bottom)
-                        </text>
-
-                        <text x={44} y={105} fill="#dc2626" fontSize={12} fontWeight={700}>
-                          X
-                        </text>
-                        <text x={214} y={105} fill="#dc2626" fontSize={12} fontWeight={700}>
-                          X
-                        </text>
-                      </svg>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowBucketAnalysis(true)}
-                      className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500"
-                    >
-                      Analyze the Bucket
-                    </button>
-                    {showBucketAnalysis && (
-                      <div className="rounded-lg border border-amber-200 bg-amber-100/60 p-3 text-sm text-amber-900 space-y-1">
-                        <div>1. Top and Bottom are parallel? YES.</div>
-                        <div>2. Left and Right are parallel? NO (they lean in).</div>
-                        <div>Conclusion: It has exactly ONE pair of parallel sides. It is a Trapezium!</div>
-                        <div className="pt-2">
-                          <button
-                            type="button"
-                            onClick={passSafetyGate}
-                            className="rounded-lg bg-amber-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-600"
-                          >
-                            I see it now - Back to Quiz
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-                {showModuleFiveIsosceles && (
-                  <div className="rounded-xl border border-purple-200 bg-purple-50/60 p-4 space-y-4">
-                    <div className="text-sm font-semibold text-purple-900">Isosceles Trapezium</div>
-                    <div className="rounded-lg border border-purple-200 bg-white p-4">
-                      <svg viewBox="0 0 320 200" className="h-40 w-full">
-                        {(() => {
-                          const topLeft = { x: 100, y: 50 };
-                          const topRight = { x: 200, y: 50 };
-                          const bottomLeft = { x: 70, y: 150 };
-                          const bottomRight = { x: showNonIsosceles ? 280 : 230, y: 150 };
-
-                          const leftLabel = { x: (topLeft.x + bottomLeft.x) / 2 - 30, y: (topLeft.y + bottomLeft.y) / 2 };
-                          const rightLabel = { x: (topRight.x + bottomRight.x) / 2 + 10, y: (topRight.y + bottomRight.y) / 2 };
-
-                          return (
-                            <>
-                              <line
-                                x1={135}
-                                y1={30}
-                                x2={135}
-                                y2={170}
-                                stroke="#94a3b8"
-                                strokeDasharray="6 6"
-                                strokeWidth={2}
-                              />
-
-                              <polygon
-                                points={`${topLeft.x},${topLeft.y} ${topRight.x},${topRight.y} ${bottomRight.x},${bottomRight.y} ${bottomLeft.x},${bottomLeft.y}`}
-                                fill="none"
-                                stroke="#1e293b"
-                                strokeWidth={4}
-                                strokeLinejoin="round"
-                              />
-
-                              <path
-                                d={`M ${topLeft.x} ${topLeft.y} L ${bottomLeft.x} ${bottomLeft.y}`}
-                                stroke="#a855f7"
-                                strokeWidth={6}
-                                strokeLinecap="round"
-                              />
-                              <path
-                                d={`M ${topRight.x} ${topRight.y} L ${bottomRight.x} ${bottomRight.y}`}
-                                stroke="#a855f7"
-                                strokeWidth={6}
-                                strokeLinecap="round"
-                              />
-
-                              <text x={leftLabel.x} y={leftLabel.y} fill="#7e22ce" fontSize={10} fontWeight={700}>
-                                ||
-                              </text>
-                              <text x={rightLabel.x} y={rightLabel.y} fill="#7e22ce" fontSize={10} fontWeight={700}>
-                                ||
-                              </text>
-
-                              <text x={leftLabel.x - 10} y={leftLabel.y - 12} fill="#7e22ce" fontSize={10} fontWeight={600}>
-                                Length: 5cm
-                              </text>
-                              <text x={rightLabel.x - 6} y={rightLabel.y - 12} fill="#7e22ce" fontSize={10} fontWeight={600}>
-                                Length: {showNonIsosceles ? "7cm" : "5cm"}
-                              </text>
-
-                              <text x={155} y={32} textAnchor="middle" fill="#0f172a" fontSize={10} fontWeight={600}>
-                                Still parallel, but different lengths
-                              </text>
-                            </>
-                          );
-                        })()}
-                      </svg>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowNonIsosceles((prev) => !prev)}
-                      className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-500"
-                    >
-                      {showNonIsosceles ? "Show Isosceles" : "Show Non-Isosceles"}
-                    </button>
-                    {showNonIsosceles && (
-                      <div className="rounded-lg border border-purple-200 bg-purple-100/60 p-3 text-sm text-purple-900">
-                        Notice the difference? In an ISOSCELES trapezium, the leaning sides must be a perfect mirror image of each other.
-                      </div>
-                    )}
-                    <div>
-                      <button
-                        type="button"
-                        onClick={passSafetyGate}
-                        className="rounded-lg bg-purple-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-600"
-                      >
-                        I understand the symmetry - Back to Quiz
-                      </button>
-                    </div>
-                  </div>
-                )}
-                {showModuleFiveProperties && (
-                  <InteractiveTrapeziumProperties />
                 )}
                 {showModuleOneConcave && (
                   <PolygonTypeVisualizer />

@@ -2,16 +2,58 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useGameStore } from "@/store/useGameStore";
 import { Hexagon, Sparkles } from "lucide-react";
+import { fetchLearnerProfile } from "@/lib/api";
 
 const Login = () => {
   const [rollNumber, setRollNumber] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [statusTone, setStatusTone] = useState<"neutral" | "success" | "celebrate" | "error">("neutral");
   const setStudentId = useGameStore((s) => s.setStudentId);
+  const hydrateLearnerProfile = useGameStore((s) => s.hydrateLearnerProfile);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (rollNumber.trim()) {
-      setStudentId(rollNumber.trim());
+    const trimmed = rollNumber.trim();
+    if (!trimmed) return;
+
+    setIsLoading(true);
+    setStatusTone("neutral");
+    setStatusMessage("Accessing Learner Model...");
+
+    const result = await fetchLearnerProfile(trimmed);
+    if (!result) {
+      setIsLoading(false);
+      setStatusTone("error");
+      setStatusMessage("Unable to load your profile. Please try again.");
+      return;
     }
+
+    const { profile, isNew } = result;
+    const masteryScores = profile?.cognitive_profiling?.bkt_mastery_probabilities ?? {};
+    const pedagogical = profile?.pedagogical_interaction_history ?? {};
+    const consecutiveErrors = pedagogical?.consecutive_errors_current_node ?? 0;
+    const totalQuestionsEncountered = pedagogical?.total_questions_encountered ?? 0;
+    const firstTryCorrects = pedagogical?.first_try_corrects ?? 0;
+
+    if (isNew) {
+      setStatusTone("celebrate");
+      setStatusMessage("New Learner Profile initialized! Welcome to Quests of Quads.");
+    } else {
+      setStatusTone("success");
+      setStatusMessage("Profile found! Resuming your previous progress...");
+    }
+
+    setTimeout(() => {
+      setStudentId(trimmed);
+      hydrateLearnerProfile({
+        masteryScores,
+        consecutiveErrors,
+        totalQuestionsEncountered,
+        firstTryCorrects,
+      });
+      setIsLoading(false);
+    }, 1600);
   };
 
   return (
@@ -46,14 +88,40 @@ const Login = () => {
               placeholder="e.g. 2024-VIII-042"
               className="w-full px-5 py-3.5 rounded-2xl bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
               required
+              disabled={isLoading}
             />
           </div>
 
-          <button type="submit" className="btn-primary-glass w-full flex items-center justify-center gap-2">
+          <button
+            type="submit"
+            className="btn-primary-glass w-full flex items-center justify-center gap-2"
+            disabled={isLoading}
+          >
             <Sparkles className="w-5 h-5" />
-            Begin Quest
+            {isLoading ? "Accessing Learner Model..." : "Begin Quest"}
           </button>
         </form>
+
+        {statusMessage && (
+          <div
+            className={
+              statusTone === "success"
+                ? "mt-4 rounded-xl bg-emerald-50 text-emerald-700 px-4 py-3 text-sm font-semibold"
+                : statusTone === "celebrate"
+                  ? "mt-4 rounded-xl bg-purple-50 text-purple-700 px-4 py-3 text-sm font-semibold"
+                  : statusTone === "error"
+                    ? "mt-4 rounded-xl bg-red-50 text-red-700 px-4 py-3 text-sm font-semibold"
+                    : "mt-4 rounded-xl bg-slate-50 text-slate-700 px-4 py-3 text-sm font-semibold"
+            }
+          >
+            <div className="flex items-center gap-2">
+              {isLoading && (
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              )}
+              <span>{statusMessage}</span>
+            </div>
+          </div>
+        )}
 
         <p className="text-xs text-muted-foreground mt-6">Class 8 · NCERT Mathematics</p>
       </motion.div>

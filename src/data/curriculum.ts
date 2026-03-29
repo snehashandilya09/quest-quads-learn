@@ -283,7 +283,69 @@ export const modules: Module[] = [
   {
     id: "module-3-diagonals",
     title: "Power of Diagonals",
-    story: "Imagine you are building a wooden frame for a table. To make it super strong, you place two crossing wooden boards inside, forming an 'X'. These crossing boards are called diagonals. Where they cross, and how long they are, decides if your table will be a wobbly mess or a perfect shape!",
+    story: `
+<div class='space-y-8 text-slate-800 leading-relaxed'>
+  
+  <section>
+    <div class='flex items-center space-x-3 mb-4'>
+      <span class='bg-orange-100 text-orange-600 p-2 rounded-lg'>🦴</span>
+      <h3 class='text-2xl font-bold text-orange-900'>Section 1: The Invisible Skeleton</h3>
+    </div>
+    <p class='text-lg'>
+      Think of a diagonal as the internal support beam of a shape. It connects two opposite corners that aren't already touching. While the outer edges are the "skin", these internal beams are the <strong>'Skeleton'</strong> that holds the quadrilateral together and gives it strength!
+    </p>
+    <img src="/assets/images/module3/m3_skeleton.png" alt='Diagonal Skeleton' class='rounded-2xl shadow-md border border-slate-200 mx-auto my-6 max-w-xs w-full object-cover' />
+  </section>
+
+  <hr class='border-slate-200' />
+
+  <section>
+    <div class='flex items-center space-x-3 mb-4'>
+      <span class='bg-orange-100 text-orange-600 p-2 rounded-lg'>✂️</span>
+      <h3 class='text-2xl font-bold text-orange-900'>Section 2: The Rule of Bisection</h3>
+    </div>
+    <div class='bg-orange-50 p-6 rounded-2xl border-l-4 border-orange-500 shadow-sm'>
+      <p class='text-lg text-orange-900'>
+        In all parallelograms, diagonals <strong>Bisect</strong> each other. This is a fancy way of saying they cross at their exact middle points, cutting each other into two perfectly equal halves. If you nail two wooden boards together exactly at their center points, you've just built the foundation of a parallelogram!
+      </p>
+    </div>
+    <img src="/assets/images/module3/m3_bisection.png" alt='Diagonals Bisecting' class='rounded-2xl shadow-md border border-slate-200 mx-auto my-6 max-w-xs w-full object-cover' />
+  </section>
+
+  <hr class='border-slate-200' />
+
+  <section>
+    <div class='flex items-center space-x-3 mb-4'>
+      <span class='bg-orange-100 text-orange-600 p-2 rounded-lg'>🔨</span>
+      <h3 class='text-2xl font-bold text-orange-900'>Section 3: The Carpenter's Secret</h3>
+    </div>
+    <p class='text-lg mb-4'>
+      By changing how long these internal beams are, and the angle at which you nail them together, a master carpenter can create special members of the shape family:
+    </p>
+    
+    <div class='grid grid-cols-1 md:grid-cols-3 gap-4 my-6'>
+      <div class='bg-blue-50 p-5 rounded-2xl border border-blue-100 text-center'>
+        <h4 class='font-bold text-blue-900 text-xl mb-2'>Rectangle ▭</h4>
+        <p class='text-blue-800 text-sm'>To make this, your two internal beams must be <strong>Exactly Equal</strong> in length.</p>
+      </div>
+      
+      <div class='bg-purple-50 p-5 rounded-2xl border border-purple-100 text-center'>
+        <h4 class='font-bold text-purple-900 text-xl mb-2'>Rhombus 💠</h4>
+        <p class='text-purple-800 text-sm'>The beams must cross at a perfect <strong>90° Angle</strong> (Perpendicular), like a plus sign.</p>
+      </div>
+      
+      <div class='bg-green-50 p-5 rounded-2xl border border-green-100 text-center'>
+        <h4 class='font-bold text-green-900 text-xl mb-2'>Square 🟩</h4>
+        <p class='text-green-800 text-sm'>The ultimate shape! Its beams must be <strong>Equal AND cross at 90°</strong>.</p>
+      </div>
+    </div>
+  </section>
+  
+  <div class='mt-10 bg-slate-800 text-white p-6 rounded-2xl text-center shadow-lg'>
+    <p class='font-medium text-lg italic'>Ready to step up to the workbench? Let's start the Carpenter's Challenge!</p>
+  </div>
+</div>
+`,
     questions: [
       {
         id: "m3_q1",
@@ -375,7 +437,59 @@ export const modules: Module[] = [
   {
     id: "module-4-rhombus-kite",
     title: "Kites & Rhombuses",
-    story: "Think of a real paper kite flying in the sky. The two top edges are short and equal, and the two bottom edges are long and equal. Now, imagine using magic to stretch the top edges so all four sides become the exact same length. Your kite just transformed into a beautiful, balanced shape called a Rhombus!",
+    story: `
+<div class='space-y-8 text-slate-800 leading-relaxed'>
+  
+  <section>
+    <div class='flex items-center space-x-3 mb-4'>
+      <span class='bg-purple-100 text-purple-600 p-2 rounded-lg'>🪁</span>
+      <h3 class='text-2xl font-bold text-purple-900'>Section 1: The Classic Kite</h3>
+    </div>
+    <p class='text-lg'>
+      Think of a traditional paper kite flying in the sky. Unlike a parallelogram where <em>opposite</em> sides match, a <strong>Kite</strong> has matching sides that are right next to each other! The two top edges are the same short length, and the two bottom edges are the same long length. We call these <strong>Adjacent Sides</strong>.
+    </p>
+    <img src='/assets/images/module4/m4_kite.png' alt='Properties of a Kite' class='rounded-2xl shadow-md border border-slate-200 mx-auto my-6 max-w-sm w-full object-cover' />
+  </section>
+
+  <hr class='border-slate-200' />
+
+  <section>
+    <div class='flex items-center space-x-3 mb-4'>
+      <span class='bg-purple-100 text-purple-600 p-2 rounded-lg'>💎</span>
+      <h3 class='text-2xl font-bold text-purple-900'>Section 2: The Rhombus Evolution</h3>
+    </div>
+    <div class='bg-purple-50 p-6 rounded-2xl border-l-4 border-purple-500 shadow-sm'>
+      <p class='text-lg text-purple-900'>
+        What happens if you take a kite and stretch the short top sides until they perfectly match the long bottom sides? You create a <strong>Rhombus</strong>! A Rhombus is a special shape where <strong>all four sides are exactly equal</strong>. It's like a square that got pushed over by the wind.
+      </p>
+    </div>
+    <img src='/assets/images/module4/m4_rhombus.png' alt='Properties of a Rhombus' class='rounded-2xl shadow-md border border-slate-200 mx-auto my-6 max-w-sm w-full object-cover' />
+  </section>
+
+  <hr class='border-slate-200' />
+
+  <section>
+    <div class='flex items-center space-x-3 mb-4'>
+      <span class='bg-purple-100 text-purple-600 p-2 rounded-lg'>➕</span>
+      <h3 class='text-2xl font-bold text-purple-900'>Section 3: The 90° Rule</h3>
+    </div>
+    <p class='text-lg mb-4'>
+      Both Kites and Rhombuses share one very strict rule about their internal skeleton (their diagonals):
+    </p>
+    
+    <div class='bg-slate-50 p-6 rounded-2xl border border-slate-200 text-center shadow-inner'>
+      <h4 class='font-bold text-slate-900 text-xl mb-3'>The Perfect Cross</h4>
+      <p class='text-slate-700'>
+        To keep these shapes perfectly balanced, their diagonals must cross straight up and straight across. This means they will always intersect at a perfect <strong>90° Angle (Perpendicular)</strong>, forming a perfect plus sign (+).
+      </p>
+    </div>
+  </section>
+  
+  <div class='mt-10 bg-slate-800 text-white p-6 rounded-2xl text-center shadow-lg'>
+    <p class='font-medium text-lg italic'>Ready to unlock the Rhombus? Let's enter the Shape Shifter Lab!</p>
+  </div>
+</div>
+`,
     questions: [
       {
         id: "m4_q1",
@@ -467,7 +581,48 @@ export const modules: Module[] = [
   {
     id: "module-5-trapezium-hierarchy",
     title: "Trapeziums & Families",
-    story: "Shapes have families! A Trapezium is very relaxed—it only needs one pair of lines going in the exact same direction, like the top and bottom of a lamp shade. But a Square is the ultimate rule-follower. It perfectly obeys all the rules of a Rectangle AND a Rhombus at the exact same time!",
+    story: `
+<div class='space-y-8 text-slate-800 leading-relaxed'>
+  
+  <section>
+    <div class='flex items-center space-x-3 mb-4'>
+      <span class='bg-teal-100 text-teal-600 p-2 rounded-lg'>🌉</span>
+      <h3 class='text-2xl font-bold text-teal-900'>Section 1: The One-Pair Wonder</h3>
+    </div>
+    <p class='text-lg'>
+      Not every shape gets to be a Parallelogram. The <strong>Trapezium</strong> is the "One-Pair Wonder" of the geometry world. It has exactly <em>one</em> pair of parallel sides (usually the top and bottom), while the other two sides lean in. You see this shape everywhere in the real world—think of the side of a bridge, a lampshade, or a wheelbarrow!
+    </p>
+    <img src='/assets/images/module5/m5_trapezium.png' alt='Properties of a Trapezium' class='rounded-2xl shadow-md border border-slate-200 mx-auto my-6 max-w-sm w-full object-cover' />
+  </section>
+
+  <hr class='border-slate-200' />
+
+  <section>
+    <div class='flex items-center space-x-3 mb-4'>
+      <span class='bg-teal-100 text-teal-600 p-2 rounded-lg'>🌳</span>
+      <h3 class='text-2xl font-bold text-teal-900'>Section 2: The Shape Family Tree</h3>
+    </div>
+    <div class='bg-teal-50 p-6 rounded-2xl border-l-4 border-teal-500 shadow-sm'>
+      <p class='text-lg text-teal-900 mb-3'>
+        Shapes inherit rules just like families inherit traits! Think about animals: a Golden Retriever is a "Dog," but because it is a dog, it is also automatically a "Mammal." 
+      </p>
+      <p class='text-lg text-teal-900 font-medium'>
+        In geometry, the <strong>Square</strong> is the ultimate shape because it belongs to every club:
+      </p>
+      <ul class='list-disc ml-6 mt-3 space-y-2 text-teal-800'>
+        <li>Because its opposite sides are parallel, it is a <strong>Parallelogram</strong>.</li>
+        <li>Because it has four 90° angles, it is officially a <strong>Rectangle</strong>.</li>
+        <li>Because it has four equal sides, it is officially a <strong>Rhombus</strong>.</li>
+      </ul>
+    </div>
+    <img src='/assets/images/module5/m5_hierarchy.png' alt='Quadrilateral Hierarchy Venn Diagram' class='rounded-2xl shadow-md border border-slate-200 mx-auto my-6 max-w-md w-full object-cover' />
+  </section>
+  
+  <div class='mt-10 bg-slate-800 text-white p-6 rounded-2xl text-center shadow-lg'>
+    <p class='font-medium text-lg italic'>Time for the final test. Enter the Shape Decoder to master the families!</p>
+  </div>
+</div>
+`,
     questions: [
       {
         id: "m5_q1",

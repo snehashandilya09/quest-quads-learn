@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { syncLearnerState } from '@/lib/api';
 
 export interface AnswerRecord {
   moduleId: string;
@@ -18,6 +19,8 @@ interface GameState {
   masteryScores: Record<string, number>;
   errorCount: number;
   showRemedial: boolean;
+  totalQuestionsEncountered: number;
+  firstTryCorrects: number;
   
   setStudentId: (id: string) => void;
   setCurrentModule: (id: string | null) => void;
@@ -30,6 +33,18 @@ interface GameState {
   getTotalHintsUsed: () => number;
   getTopicCompletion: () => Record<string, number>;
   handleAnswer: (isCorrect: boolean, hintsUsed: number, moduleId: string) => number;
+  submitAnswerAndUpdateProfile: (
+    learnerId: string,
+    conceptId: string,
+    isCorrect: boolean,
+    errorTag?: string | null
+  ) => Promise<number | null>;
+  updateMasteryScore: (conceptId: string, newScore: number) => void;
+  recordQuestionAttempt: (isCorrectOnFirstTry: boolean) => void;
+  hydrateLearnerProfile: (profile: {
+    masteryScores?: Record<string, number>;
+    consecutiveErrors?: number;
+  }) => void;
   resetQuestionState: () => void;
   passSafetyGate: () => void;
   exportPayload: () => object;
@@ -45,9 +60,16 @@ export const useGameStore = create<GameState>((set, get) => ({
   sessionId: generateSessionId(),
   answers: [],
   currentModule: null,
-  masteryScores: {},
+  masteryScores: {
+    polygon_angle_sum: 0,
+    parallelogram_opposite_sides: 0,
+    parallelogram_adjacent_angles: 0,
+    hierarchical_classification: 0,
+  },
   errorCount: 0,
   showRemedial: false,
+  totalQuestionsEncountered: 0,
+  firstTryCorrects: 0,
 
   setStudentId: (id) => set({ studentId: id }),
   setCurrentModule: (id) => set({ currentModule: id }),
@@ -118,6 +140,90 @@ export const useGameStore = create<GameState>((set, get) => ({
     return nextScore;
   },
 
+  submitAnswerAndUpdateProfile: async (learnerId, conceptId, isCorrect, errorTag = null) => {
+    const state = get();
+    const currentScore = state.masteryScores[conceptId] ?? 0.1;
+
+    const P_G = 0.2;
+    const P_S = 0.1;
+    const P_T = 0.3;
+
+    const updateBkt = (correct: boolean, prob: number) => {
+      if (correct) {
+        const pKnownGivenCorrect = (prob * (1 - P_S)) / ((prob * (1 - P_S)) + ((1 - prob) * P_G));
+        return pKnownGivenCorrect + (1 - pKnownGivenCorrect) * P_T;
+      }
+
+      const pKnownGivenIncorrect = (prob * P_S) / ((prob * P_S) + ((1 - prob) * (1 - P_G)));
+      return pKnownGivenIncorrect + (1 - pKnownGivenIncorrect) * P_T;
+    };
+
+    let nextScore = currentScore;
+    if (conceptId) {
+      nextScore = updateBkt(isCorrect, currentScore);
+      set({ masteryScores: { ...state.masteryScores, [conceptId]: nextScore } });
+    }
+
+    if (!isCorrect) {
+      const nextErrorCount = state.errorCount + 1;
+      set({
+        errorCount: nextErrorCount,
+        showRemedial: nextErrorCount >= 3,
+      });
+    }
+
+    const nextTotalCorrect = isCorrect ? state.getCorrectCount() + 1 : state.getCorrectCount();
+    const nextTotalWrong = !isCorrect ? state.getWrongCount() + 1 : state.getWrongCount();
+    const nextTotalHints = state.getTotalHintsUsed();
+
+    try {
+      await syncLearnerState(
+        learnerId,
+        conceptId ? { [conceptId]: nextScore } : {},
+        errorTag ?? undefined,
+        get().errorCount,
+        {
+          totalQuestionsEncountered: get().totalQuestionsEncountered,
+          firstTryCorrects: get().firstTryCorrects,
+          totalCorrect: nextTotalCorrect,
+          totalWrong: nextTotalWrong,
+          totalHintsUsed: nextTotalHints,
+        }
+      );
+    } catch (error) {
+      console.error('Learner sync failed', error);
+    }
+
+    return conceptId ? nextScore : null;
+  },
+
+  updateMasteryScore: (conceptId, newScore) => set((state) => ({
+    masteryScores: {
+      ...state.masteryScores,
+      [conceptId]: newScore,
+    },
+  })),
+
+  recordQuestionAttempt: (isCorrectOnFirstTry) => set((state) => ({
+    totalQuestionsEncountered: state.totalQuestionsEncountered + 1,
+    firstTryCorrects: isCorrectOnFirstTry
+      ? state.firstTryCorrects + 1
+      : state.firstTryCorrects,
+  })),
+
+  hydrateLearnerProfile: (profile) => set((state) => {
+    const nextMastery = profile.masteryScores
+      ? { ...state.masteryScores, ...profile.masteryScores }
+      : state.masteryScores;
+    const nextErrorCount = profile.consecutiveErrors ?? state.errorCount;
+
+    return {
+      masteryScores: nextMastery,
+      errorCount: nextErrorCount,
+      showRemedial: nextErrorCount >= 3,
+    };
+  }),
+
   resetQuestionState: () => set({ errorCount: 0, showRemedial: false }),
 
   passSafetyGate: () => set({ errorCount: 0, showRemedial: false }),
@@ -141,8 +247,15 @@ export const useGameStore = create<GameState>((set, get) => ({
     sessionId: generateSessionId(),
     answers: [],
     currentModule: null,
-    masteryScores: {},
+    masteryScores: {
+      polygon_angle_sum: 0,
+      parallelogram_opposite_sides: 0,
+      parallelogram_adjacent_angles: 0,
+      hierarchical_classification: 0,
+    },
     errorCount: 0,
     showRemedial: false,
+    totalQuestionsEncountered: 0,
+    firstTryCorrects: 0,
   }),
 }));
